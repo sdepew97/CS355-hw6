@@ -121,7 +121,7 @@ boolean defragment(char *inputFile) {
 
         //read all the blocks...
         while(TRUE) {
-            fread(inode1, sizeof(inode), 1, filePtr);
+            fread(inodePtr, sizeof(inode), 1, filePtr);
         }
 
 
