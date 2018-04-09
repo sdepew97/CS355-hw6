@@ -113,10 +113,12 @@ boolean defragment(char *inputFile) {
 
         //set some values based on superblock that will be useful
         int size = superblockPtr->size;
-        inode *inodePtr = (inode *) malloc(sizeof(inode));
-        if(inodePtr == NULL) {
-            perror("more details");
-        }
+        superblock *superblockPtr2 = (superblock *) malloc(sizeof(superblock));
+
+//        inode *inodePtr = (inode *) malloc(sizeof(inode));
+//        if(inodePtr == NULL) {
+//            perror("more details");
+//        }
 
 //        //TODO: get offset of inode region based on superblock values
 //
