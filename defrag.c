@@ -104,7 +104,33 @@ boolean defragment(char *inputFile) {
         //read in and store the superblock!
         struct superblock *superblockPtr = malloc(sizeof(struct superblock *));
         fread(superblockPtr, SIZEOFBOOTBLOCK, 1, filePtr);
+
+        //set some values based on superblock that will be useful
+        int size = superblockPtr->size;
+        struct inode *inode1 = malloc(sizeof(inode *));
+
+        //TODO: get offset of inode region based on superblock values
+
+        //read all the blocks...
+        while(TRUE) {
+            fread(inode1, sizeof(inode), 1, filePtr);
+        }
+
+
+
+
+
+
+
+
+
+
+
+
+
+        //write the superblock to the output file
         fwrite(superblockPtr, SIZEOFBOOTBLOCK, 1, outputPtr);
+        //TODO: free all pointers as needed!!
         free(superblockPtr); //TODO: put where best!!
 
     } else {
@@ -113,4 +139,8 @@ boolean defragment(char *inputFile) {
 
     //TODO: close files! and free pointers from beginning
     return TRUE;
+}
+
+long inodeOffsetBytes(int blockSize, int offset) {
+    return (2*SIZEOFBOOTBLOCK +
 }
