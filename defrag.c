@@ -102,7 +102,7 @@ boolean defragment(char *inputFile) {
         free(bootBlockPtr);
 
         //read in and store the superblock!
-        superblock *superblockPtr = malloc(sizeof(superblock *));
+        struct superblock *superblockPtr = malloc(sizeof(struct superblock *));
         fread(superblockPtr, SIZEOFBOOTBLOCK, 1, filePtr);
         fwrite(superblockPtr, SIZEOFBOOTBLOCK, 1, outputPtr);
         free(superblockPtr); //TODO: put where best!!
