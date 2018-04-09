@@ -97,12 +97,18 @@ boolean defragment(char *inputFile) {
 
     //transfer over boot block, first
         void *bootBlockPtr = malloc(SIZEOFBOOTBLOCK);
+        if(bootBlockPtr == NULL) {
+            perror("more details");
+        }
         fread(bootBlockPtr, SIZEOFBOOTBLOCK, 1, filePtr);
         fwrite(bootBlockPtr, SIZEOFBOOTBLOCK, 1, outputPtr);
         free(bootBlockPtr);
 
         //read in and store the superblock!
         superblock *superblockPtr = (superblock *) malloc(sizeof(superblock));
+        if(superblockPtr == NULL) {
+            perror("more details");
+        }
         fread(superblockPtr, SIZEOFBOOTBLOCK, 1, filePtr);
 
         //set some values based on superblock that will be useful
