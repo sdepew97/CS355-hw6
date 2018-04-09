@@ -102,25 +102,27 @@ boolean defragment(char *inputFile) {
         fwrite(bootBlockPtr, SIZEOFBOOTBLOCK, 1, outputPtr);
         free(bootBlockPtr);
 
+        //TODO: error check malloc
+
         //read in and store the superblock!
         superblock *superblockPtr = malloc(sizeof(superblock));
         fread(superblockPtr, sizeof(superblock), 1, filePtr);
-//
-//        //set some values based on superblock that will be useful
-//        int size = superblockPtr->size;
-//        perror("more details");
-//        inode *inodePtr = (inode *) malloc(sizeof(inode));
-//        perror("more details");
-//        if(inodePtr == NULL) {
-//            perror("more details");
-//        }
 
-//        //TODO: get offset of inode region based on superblock values
-//
-//        //read all the blocks...
-//        while(TRUE) {
-//            fread(inode1, sizeof(inode), 1, filePtr);
-//        }
+        //set some values based on superblock that will be useful
+        int size = superblockPtr->size;
+        inode *inodePtr = malloc(sizeof(inode));
+
+        //TODO: get offset of inode region based on superblock values
+        int firstNodeOffsetInFile = inodeOffsetBytes(size, superblockPtr->inode_offset); //location of where FIRST inode starts in input file
+
+        //get file pointer for input to point to first inode, now by asking for offset from start
+//        rewind(filePtr);
+        int returnFSeek = fseek(filePtr, firstNodeOffsetInFile, SEEK_SET);
+
+        //read all the blocks...
+        while(TRUE) {
+            fread(inode1, sizeof(inode), 1, filePtr);
+        }
 
 
 
@@ -148,6 +150,6 @@ boolean defragment(char *inputFile) {
     return TRUE;
 }
 
-//long inodeOffsetBytes(int blockSize, int offset) {
-//    return (2*SIZEOFBOOTBLOCK +
-//}
+long inodeOffsetBytes(int blockSize, int offset) {
+    return (2*SIZEOFBOOTBLOCK + blockSize*offset);
+}

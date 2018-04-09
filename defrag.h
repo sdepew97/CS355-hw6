@@ -43,5 +43,6 @@ void printDirections();
 void printManPage();
 int parseCmd(int argc, char *argv[]);
 boolean defragment(char *inputFile);
+long inodeOffsetBytes(int blockSize, int offset);
 
 #endif //HW6_MAIN_H
