@@ -77,16 +77,9 @@ boolean defragment(char *inputFile) {
     char *readingFlag = "rb+\0";
     char *writingFlag = "wb+\0";
     char *defragExtension = "-defrag\0";
-
-    char *inputFileName = malloc(sizeof(char *)); //TODO: free at the end!
-    strcpy(inputFileName, inputFile);
-
     char *outputFileName = malloc(sizeof(char *));
-//    char *outputFileName = inputFile; //TODO: ask about weird error for strcpy and cat... (only on mac, so local to mac??)
-    outputFileName = strcpy(outputFileName, inputFile);
     strcat(outputFileName, defragExtension);
     printf("created output name of %s\n", outputFileName);
-    printf("input file name of %s\n", inputFileName);
 
     FILE *filePtr = fopen(inputFileName, readingFlag);
     FILE *outputPtr = fopen(outputFileName, writingFlag);
