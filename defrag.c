@@ -104,7 +104,7 @@ boolean defragment(char *inputFile) {
 
         //read in and store the superblock!
         superblock *superblockPtr = malloc(sizeof(superblock));
-        fread(superblockPtr, SIZEOFBOOTBLOCK, 1, filePtr);
+        fread(superblockPtr, sizeof(superblock), 1, filePtr);
 //
 //        //set some values based on superblock that will be useful
 //        int size = superblockPtr->size;
