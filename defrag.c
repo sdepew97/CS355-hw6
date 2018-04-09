@@ -80,7 +80,8 @@ boolean defragment(char *inputFile) {
 
     char *inputFileName = strdup(inputFile); //TODO: free at the end!
 
-    char *outputFileName = strdup(inputFile);
+    char *outputFileName = malloc(strlen(inputFile) + strlen(defragExtension) + 1);
+    strcpy(outputFileName, inputFile);
     strcat(outputFileName, defragExtension);
 //    printf("created output name of %s\n", outputFileName);
 //    printf("input file name of %s\n", inputFileName);
