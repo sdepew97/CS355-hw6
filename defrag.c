@@ -107,7 +107,7 @@ boolean defragment(char *inputFile) {
 
         //set some values based on superblock that will be useful
         int size = superblockPtr->size;
-        struct inode *inode1 = malloc(sizeof(inode *));
+        struct inode *inode1 = malloc(sizeof(struct inode *));
 
         //TODO: get offset of inode region based on superblock values
 
@@ -141,6 +141,6 @@ boolean defragment(char *inputFile) {
     return TRUE;
 }
 
-long inodeOffsetBytes(int blockSize, int offset) {
-    return (2*SIZEOFBOOTBLOCK +
-}
+//long inodeOffsetBytes(int blockSize, int offset) {
+//    return (2*SIZEOFBOOTBLOCK +
+//}
