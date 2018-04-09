@@ -129,9 +129,9 @@ boolean defragment(char *inputFile) {
 
 
         //write the superblock to the output file
-        fwrite(superblockPtr, SIZEOFBOOTBLOCK, 1, outputPtr);
+//        fwrite(superblockPtr, SIZEOFBOOTBLOCK, 1, outputPtr);
         //TODO: free all pointers as needed!!
-        free(superblockPtr); //TODO: put where best!!
+//        free(superblockPtr); //TODO: put where best!!
 
     } else {
         return FALSE;
