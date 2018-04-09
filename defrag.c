@@ -20,22 +20,28 @@ int main(int argc, char *argv[]) {
             printManPage();
         } else {
             //TODO: implement de-fragmenting the file....
-
+            printf("secondArgument: %s\n", argv[1]);
+            //TODO: check if defrag succeeded
+            defragment(argv[1]);
         }
     } else {
         //if there are fewer than or more than two arguments to the command line, an error message with how to run the program should print
         printDirections();
     }
 
-//    printf("argc value %d\n", argc);
-
     return 0;
 }
 
+/*
+ * Print the directions of how to use the program when just "./defrag" is input
+ */
 void printDirections() {
     printf("Run the program with ./defrag <fragmented disk file>.\n");
 }
 
+/*
+ * Method for printing the man page
+ */
 void printManPage() {
     printf("NAME\n");
     printf("\tdefrag -- defragment a Unix-like file system\n");
@@ -64,4 +70,40 @@ int parseCmd(int argc, char *argv[]) {
             return defrag;
         }
     }
+}
+
+boolean defragment(char *inputFile) {
+    //Naming information
+    char *readingFlag = "rb+\0";
+    char *writingFlag = "wb+\0";
+    char *defragExtension = "-defrag\0";
+
+    char *inputFileName = malloc(sizeof(char *)); //TODO: free at the end!
+    strcpy(inputFileName, inputFile);
+
+    char *outputFileName = malloc(sizeof(char *));
+//    char *outputFileName = inputFile;
+    strcpy(outputFileName, inputFile);
+    strcat(outputFileName, defragExtension);
+    printf("created output name of %s\n", outputFileName);
+    printf("input file name of %s\n", inputFileName);
+
+    FILE *filePtr = fopen(inputFileName, readingFlag);
+    FILE *outputPtr = fopen(outputFileName, writingFlag);
+    printf("File pointer values %p, %p\n", filePtr, outputPtr);
+
+    if (filePtr != NULL && outputPtr != NULL) {
+    //filePtr and outputPtr are valid file pointers
+
+    //transfer over boot block, first
+        void *bootBlockPtr = malloc(SIZEOFBOOTBLOCK);
+        fread(bootBlockPtr, SIZEOFBOOTBLOCK, 1, filePtr);
+        fwrite(bootBlockPtr, SIZEOFBOOTBLOCK, 1, outputPtr);
+        free(bootBlockPtr);
+    } else {
+        return FALSE;
+    }
+
+    //TODO: close files!
+    return TRUE;
 }

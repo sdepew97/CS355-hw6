@@ -8,4 +8,4 @@ clean:
 	rm -rf *.o *.gch *.dSYM
 
 cleandefrag:
-	rm -rf *.o *.gch *.dSYM *defrag
+	rm -rf *.o *.gch *.dSYM *defrag\ * *defrag
