@@ -83,8 +83,8 @@ boolean defragment(char *inputFile) {
     char *outputFileName = malloc(strlen(inputFile) + strlen(defragExtension) + 1);
     strcpy(outputFileName, inputFile);
     strcat(outputFileName, defragExtension);
-//    printf("created output name of %s\n", outputFileName);
-//    printf("input file name of %s\n", inputFileName);
+    printf("created output name of %s\n", outputFileName);
+    printf("input file name of %s\n", inputFileName);
 /*
     FILE *filePtr = fopen(inputFileName, readingFlag);
     FILE *outputPtr = fopen(outputFileName, writingFlag);
