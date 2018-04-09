@@ -14,16 +14,16 @@
 enum {help = 0, defrag = 1, error = 2};
 
 //structs
-struct superblock {
+typedef struct superblock {
     int size;
     int inode_offset;
     int data_offset;
     int swap_offset;
     int free_inode;
     int free_block;
-};
+} superblock;
 
-struct inode {
+typedef struct inode {
     int next_inode;
     int protect;
     int nlink;
@@ -37,7 +37,7 @@ struct inode {
     int iblocks[N_IBLOCKS];
     int i2block;
     int i3block;
-};
+} inode;
 
 void printDirections();
 void printManPage();

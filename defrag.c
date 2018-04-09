@@ -102,18 +102,18 @@ boolean defragment(char *inputFile) {
         free(bootBlockPtr);
 
         //read in and store the superblock!
-        struct superblock *superblockPtr = malloc(sizeof(struct superblock *));
+        superblock *superblockPtr = malloc(sizeof(superblock *));
         fread(superblockPtr, SIZEOFBOOTBLOCK, 1, filePtr);
 
         //set some values based on superblock that will be useful
         int size = superblockPtr->size;
-        struct inode *inode1 = malloc(sizeof(struct inode *));
+        inode *inode1 = malloc(sizeof(inode *));
 
         //TODO: get offset of inode region based on superblock values
 
         //read all the blocks...
         while(TRUE) {
-            fread(inode1, sizeof(struct inode), 1, filePtr);
+            fread(inode1, sizeof(inode), 1, filePtr);
         }
 
 
