@@ -96,7 +96,7 @@ boolean defragment(char *inputFile) {
     //filePtr and outputPtr are valid file pointers
 
     //transfer over boot block, first
-        char *bootBlockPtr = malloc(SIZEOFBOOTBLOCK);
+        void *bootBlockPtr = malloc(SIZEOFBOOTBLOCK);
         if(bootBlockPtr == NULL) {
             perror("more details");
         }
@@ -113,8 +113,9 @@ boolean defragment(char *inputFile) {
 
         //set some values based on superblock that will be useful
         int size = superblockPtr->size;
-
+        perror("more details");
         inode *inodePtr = (inode *) malloc(sizeof(inode));
+        perror("more details");
         if(inodePtr == NULL) {
             perror("more details");
         }
