@@ -82,8 +82,8 @@ boolean defragment(char *inputFile) {
     strcpy(inputFileName, inputFile);
 
     char *outputFileName = malloc(sizeof(char *));
-//    char *outputFileName = inputFile;
-    strcpy(outputFileName, inputFile);
+//    char *outputFileName = inputFile; //TODO: ask about weird error for strcpy and cat... (only on mac, so local to mac??)
+    outputFileName = strcpy(outputFileName, inputFile);
     strcat(outputFileName, defragExtension);
     printf("created output name of %s\n", outputFileName);
     printf("input file name of %s\n", inputFileName);
@@ -100,10 +100,17 @@ boolean defragment(char *inputFile) {
         fread(bootBlockPtr, SIZEOFBOOTBLOCK, 1, filePtr);
         fwrite(bootBlockPtr, SIZEOFBOOTBLOCK, 1, outputPtr);
         free(bootBlockPtr);
+
+        //read in and store the superblock!
+        superblock *superblockPtr = malloc(sizeof(superblock *));
+        fread(superblockPtr, SIZEOFBOOTBLOCK, 1, filePtr);
+        fwrite(superblockPtr, SIZEOFBOOTBLOCK, 1, outputPtr);
+        free(superblockPtr); //TODO: put where best!!
+
     } else {
         return FALSE;
     }
 
-    //TODO: close files!
+    //TODO: close files! and free pointers from beginning
     return TRUE;
 }
