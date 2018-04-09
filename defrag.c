@@ -78,14 +78,14 @@ boolean defragment(char *inputFile) {
     char *writingFlag = "wb+\0";
     char *defragExtension = "-defrag\0";
 
-    char *inputFileName = strdup(inputFile); //TODO: free at the end!
+    char *inputFileName = strdup(inputFile); //TODO: free at the end!!!
 
     char *outputFileName = malloc(strlen(inputFile) + strlen(defragExtension) + 1);
     strcpy(outputFileName, inputFile);
     strcat(outputFileName, defragExtension);
     printf("created output name of %s\n", outputFileName);
     printf("input file name of %s\n", inputFileName);
-/*
+
     FILE *filePtr = fopen(inputFileName, readingFlag);
     FILE *outputPtr = fopen(outputFileName, writingFlag);
     printf("File pointer values %p, %p\n", filePtr, outputPtr);
@@ -145,7 +145,7 @@ boolean defragment(char *inputFile) {
     } else {
         return FALSE;
     }
-*/
+
     //TODO: close files! and free pointers from beginning
     return TRUE;
 }
