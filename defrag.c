@@ -139,6 +139,7 @@ boolean defragment(char *inputFile) {
         //TODO: free all pointers as needed!!
 //        free(superblockPtr); //TODO: put where best!!
 
+        return TRUE; //TODO: remove once not debugging...
     } else {
         return FALSE;
     }
