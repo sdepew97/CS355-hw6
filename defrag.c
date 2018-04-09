@@ -81,7 +81,7 @@ boolean defragment(char *inputFile) {
     char *inputFileName = strdup(inputFile); //TODO: free at the end!
 
     char *outputFileName = strdup(inputFile);
-//    strcat(outputFileName, defragExtension);
+    strcat(outputFileName, defragExtension);
 //    printf("created output name of %s\n", outputFileName);
 //    printf("input file name of %s\n", inputFileName);
 /*
