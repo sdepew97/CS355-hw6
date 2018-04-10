@@ -112,10 +112,8 @@ boolean defragment(char *inputFile) {
         int size = superblockPtr->size;
         inode *inodePtr = malloc(sizeof(inode));
 
-        //TODO: get offset of inode region and data region based on superblock values
-        int firstNodeOffsetInFile = offsetBytes(size, superblockPtr->inode_offset); //location of where FIRST inode starts in input file
-        int dataBlockOffsetInFile = offsetBytes(size, superblockPtr->data_offset); //start of data region in file
-        int swapBlockOffsetInFile = offsetBytes(size, superblockPtr->swap_offset);
+        //TODO: get offset of inode region based on superblock values
+        int firstNodeOffsetInFile = inodeOffsetBytes(size, superblockPtr->inode_offset); //location of where FIRST inode starts in input file
 
         //get file pointer for input to point to first inode, now by asking for offset from start
 //        rewind(filePtr);
@@ -136,15 +134,10 @@ boolean defragment(char *inputFile) {
                 //TODO: flesh out with proper writing of data blocks to output file and adjusting the boot blocks values!
                 //check how much nesting is used, here
                 if (inodePtr->size <= DBLOCKS) {
-                    //have to put these blocks into order...
 
                 } else if (inodePtr->size > DBLOCKS && inodePtr->size <= IBLOCKS) {
 
-                } else if (inodePtr->size > IBLOCKS && inodePtr->size <= I2BLOCKS) {
-
-                } else if (inodePtr->size > I2BLOCKS && inodePtr->size <= I3BLOCKS) {
-
-                } else { //last one is an error, since cannot use more than I3BLOCKS...
+                } else if (inodePtr->size > DBLOCKS && inodePtr->size <= IBLOCKS) {
 
                 }
             }
@@ -164,24 +157,6 @@ boolean defragment(char *inputFile) {
     return TRUE;
 }
 
-/*
- * Method returns updated current node location with location of where to put next node! (-1 if failure)
- */
-long orderDBlocks(long currentNodeLocation, inode *inodePtr, long dataOffsetLocationBytes, int size, FILE *outputFile) {
-    //put the DBlocks in order
-    float numBlocks = inodePtr->size / size; //number of blocks used, total //TODO: see if this value could end up being fractional? (yes, so how many actually used??)
-
-    //all of array is filled
-    if (numBlocks >= N_DBLOCKS) {
-
-
-    } else {
-        //all of array is NOT filled, so only do things to blocks that are used
-    }
-}
-
-//TODO: write "seek block" method to return the location of the block as a ptr? or the offset? not sure which
-
-long offsetBytes(int blockSize, int offset) {
-    return (2 * SIZEOFBOOTBLOCK + blockSize * offset);
+long inodeOffsetBytes(int blockSize, int offset) {
+    return (2*SIZEOFBOOTBLOCK + blockSize*offset);
 }
