@@ -120,9 +120,12 @@ boolean defragment(char *inputFile) {
         int returnFSeek = fseek(filePtr, firstNodeOffsetInFile, SEEK_SET);
 
         //read all the blocks...
-        while(TRUE) {
+        for(int i=0; i<((((superblockPtr->data_offset-superblockPtr->inode_offset) * size))/sizeof(inode)); i++) {
             fread(inodePtr, sizeof(inode), 1, filePtr);
         }
+
+        fread(inodePtr, sizeof(inode), 1, filePtr);
+
 
 
 
