@@ -141,9 +141,9 @@ boolean defragment(char *inputFile) {
                 //check how much nesting is used, here
                 if (inodePtr->size <= DBLOCKS) {
                     //have to put these blocks into order...
-                    currentDataBlock = orderDBlocks(currentDataBlock, &inodePtr, dataBlockOffsetInFile, size, filePtr, outputPtr);
+//                    currentDataBlock = orderDBlocks(currentDataBlock, &inodePtr, dataBlockOffsetInFile, size, filePtr, outputPtr);
                 } else if (inodePtr->size > DBLOCKS && inodePtr->size <= IBLOCKS) {
-                    currentDataBlock = orderDBlocks(currentDataBlock, &inodePtr, dataBlockOffsetInFile, size, filePtr, outputPtr);
+//                    currentDataBlock = orderDBlocks(currentDataBlock, &inodePtr, dataBlockOffsetInFile, size, filePtr, outputPtr);
 
                 } else if (inodePtr->size > IBLOCKS && inodePtr->size <= I2BLOCKS) {
 //                    currentDataBlock = orderDBlocks(currentDataBlock, &inodePtr, dataBlockOffsetInFile, size, filePtr, outputPtr);
