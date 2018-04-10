@@ -9,6 +9,8 @@
 #define SIZEOFBOOTBLOCK 512
 #define N_DBLOCKS 10
 #define N_IBLOCKS 4
+#define UNUSED 0
+#define NUMINODES ((((superblockPtr->data_offset-superblockPtr->inode_offset) * size))/sizeof(inode)) //TODO: check with Dianna tomorrow in lab
 
 //enums
 enum {help = 0, defrag = 1, error = 2};

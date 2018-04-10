@@ -117,27 +117,23 @@ boolean defragment(char *inputFile) {
 
         //get file pointer for input to point to first inode, now by asking for offset from start
 //        rewind(filePtr);
-        int returnFSeek = fseek(filePtr, firstNodeOffsetInFile, SEEK_SET);
+        int returnFSeek = fseek(filePtr, firstNodeOffsetInFile, SEEK_SET); //TODO: error check here
 
-        //read all the blocks...
-        for(int i=0; i<((((superblockPtr->data_offset-superblockPtr->inode_offset) * size))/sizeof(inode)); i++) {
+        //read all the inodes
+        for(int i=0; i<NUMINODES; i++) {
             fread(inodePtr, sizeof(inode), 1, filePtr);
+            //check if inode is free or not...if not free, then do data management and organization (otherwise, just output to output file...)
+            if (inodePtr->nlink == UNUSED) {
+                //simply output inode to file without any worries
+                //Note: ith node is current inode/index into inodes array
+                //location to write to is inodeoffsetBytes in the output file!
+                returnFSeek = fseek(outputPtr, firstNodeOffsetInFile + i * sizeof(inode),
+                                    SEEK_SET); //TODO: error check here
+                fwrite(inodePtr, sizeof(inode), 1, outputPtr);
+            } else {
+                //TODO: flesh out with proper writing of data blocks to output file and adjusting the boot blocks values!
+            }
         }
-
-        fread(inodePtr, sizeof(inode), 1, filePtr);
-
-
-
-
-
-
-
-
-
-
-
-
-
 
         //write the superblock to the output file
 //        fwrite(superblockPtr, SIZEOFBOOTBLOCK, 1, outputPtr);
