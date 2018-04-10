@@ -124,6 +124,9 @@ boolean defragment(char *inputFile) {
 
         //read all the inodes
         for(int i=0; i<NUMINODES; i++) {
+            //set file pointer to proper location here before reading next inode!
+            returnFSeek = fseek(outputPtr, firstNodeOffsetInFile + i * sizeof(inode),
+                                SEEK_SET); //TODO: error check here
             fread(inodePtr, sizeof(inode), 1, filePtr);
             //check if inode is free or not...if not free, then do data management and organization (otherwise, just output to output file...)
             if (inodePtr->nlink == UNUSED) {
