@@ -120,6 +120,7 @@ boolean defragment(char *inputFile) {
         //get file pointer for input to point to first inode, now by asking for offset from start
 //        rewind(filePtr);
         int returnFSeek = fseek(filePtr, firstNodeOffsetInFile, SEEK_SET); //TODO: error check here
+        long currentDataBlock = 0; //start the counter that keeps track of the data blocks
 
         //read all the inodes
         for(int i=0; i<NUMINODES; i++) {
@@ -137,17 +138,26 @@ boolean defragment(char *inputFile) {
                 //check how much nesting is used, here
                 if (inodePtr->size <= DBLOCKS) {
                     //have to put these blocks into order...
-
+                    currentDataBlock = orderDBlocks(currentDataBlock, &inodePtr, dataBlockOffsetInFile, size, filePtr, outputPtr);
                 } else if (inodePtr->size > DBLOCKS && inodePtr->size <= IBLOCKS) {
+                    currentDataBlock = orderDBlocks(currentDataBlock, &inodePtr, dataBlockOffsetInFile, size, filePtr, outputPtr);
 
                 } else if (inodePtr->size > IBLOCKS && inodePtr->size <= I2BLOCKS) {
+//                    currentDataBlock = orderDBlocks(currentDataBlock, &inodePtr, dataBlockOffsetInFile, size, filePtr, outputPtr);
 
                 } else if (inodePtr->size > I2BLOCKS && inodePtr->size <= I3BLOCKS) {
+//                    currentDataBlock = orderDBlocks(currentDataBlock, &inodePtr, dataBlockOffsetInFile, size, filePtr, outputPtr);
 
                 } else { //last one is an error, since cannot use more than I3BLOCKS...
 
                 }
+
+                //write modified inode to file! :) (i is location of inode...)
+                returnFSeek = fseek(outputPtr, firstNodeOffsetInFile + i * sizeof(inode),
+                                    SEEK_SET); //TODO: error check here
+                fwrite(inodePtr, sizeof(inode), 1, outputPtr);
             }
+
         }
 
         //write the superblock to the output file
@@ -167,17 +177,41 @@ boolean defragment(char *inputFile) {
 /*
  * Method returns updated current node location with location of where to put next node! (-1 if failure)
  */
-long orderDBlocks(long currentNodeLocation, inode *inodePtr, long dataOffsetLocationBytes, int size, FILE *outputFile) {
+long orderDBlocks(long currentNodeLocation, inode **inodePtr, long dataOffsetLocationBytes, int size, FILE *inputFile, FILE *outputFile) {
     //put the DBlocks in order
-    float numBlocks = inodePtr->size / size; //number of blocks used, total //TODO: see if this value could end up being fractional? (yes, so how many actually used??)
+    int returnFSeek;
+    long updatedCurrentNodeLocation = currentNodeLocation;
+    float numBlocks = (*inodePtr)->size /
+                      size; //number of blocks used, total //TODO: see if this value could end up being fractional? (yes, so how many actually used??)
 
+    //TODO: ask dianna about if fractions of blocks could end up being used and if so, do you round up to the nearest block value?
     //all of array is filled
     if (numBlocks >= N_DBLOCKS) {
+        for (int i = 0; i < N_DBLOCKS; i++) {
+            void *dataBlock = getBlock(inputFile, (dataOffsetLocationBytes + size * (*inodePtr)->dblocks[i]),
+                                       size); //TODO: check computations (assuming ints are simply indices into data region?)
+            //dataBlock is now pointing to the data block to move (put in current node location and set array value accordingly)
+            returnFSeek = fseek(outputFile, dataOffsetLocationBytes + size * updatedCurrentNodeLocation,
+                                SEEK_SET); //TODO: error check here
+            fwrite(dataBlock, size, 1, outputFile);
+            (*inodePtr)->dblocks[i] = updatedCurrentNodeLocation;
+            updatedCurrentNodeLocation++;
 
-
+        }
     } else {
         //all of array is NOT filled, so only do things to blocks that are used
+        //TODO: Ask Dianna about this case with rounding etc...
     }
+
+    return updatedCurrentNodeLocation;
+}
+
+void *getBlock(FILE *inputFile, long offsetValue, long blockSize) {
+    void *dataBlock = malloc(blockSize);
+    //position file pointer, first...
+    int returnFSeek = fseek(inputFile, offsetValue, SEEK_SET);
+    fread(dataBlock, blockSize, 1, inputFile);
+    return dataBlock;
 }
 
 //TODO: write "seek block" method to return the location of the block as a ptr? or the offset? not sure which

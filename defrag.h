@@ -50,7 +50,8 @@ void printDirections();
 void printManPage();
 int parseCmd(int argc, char *argv[]);
 boolean defragment(char *inputFile);
-long orderDBlocks(long currentNodeLocation, inode *inodePtr, long dataOffsetLocationBytes, int size, FILE *outputFile);
+long orderDBlocks(long currentNodeLocation, inode **inodePtr, long dataOffsetLocationBytes, int size, FILE *inputFile, FILE *outputFile);
 long offsetBytes(int blockSize, int offset);
+void *getBlock(FILE *inputFile, long offsetValue, long blockSize);
 
 #endif //HW6_MAIN_H
