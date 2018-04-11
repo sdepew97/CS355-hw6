@@ -170,7 +170,7 @@ boolean defragment(char *inputFile) {
         printf("head of inode list %d\n", superblockPtr->free_inode);
         printInodes(inodePtr, size, superblockPtr->inode_offset, superblockPtr->data_offset);
         printf("head of free list %d\n", superblockPtr->free_block);
-        printDataBlocks(dataBlockPtr, size, superblockPtr->data_offset, superblockPtr->swap_offset);
+//        printDataBlocks(dataBlockPtr, size, superblockPtr->data_offset, superblockPtr->swap_offset);
 
 
         //TODO: rewrite inode and super block regions to file now that they're modified correctly! (the image being held in memory is correct for superblock-inode region)
@@ -194,18 +194,18 @@ boolean defragment(char *inputFile) {
 long orderDBlocks(long nodeLocation, inode **inodePtr, void *dataPtr, int size, FILE *outputFile) {
     //put the DBlocks in order
     int numBlocks = ceil((*inodePtr)->size / size); //number of blocks used, total (take ceiling)
-    long nodeLocation = nodeLocation;
+    long nodeLocationValue = nodeLocation;
 
     //all of array is filled
     for (int i = 0; i < numBlocks; i++) {
         void *dataBlock = (dataPtr + (*inodePtr)->dblocks[i] * size); //TODO: check computation
         //dataBlock is now pointing to the data block to move (put in current node location and set array value accordingly)
         fwrite(dataBlock, size, 1, outputFile);
-        (*inodePtr)->dblocks[i] = nodeLocation;
-        nodeLocation++;
+        (*inodePtr)->dblocks[i] = nodeLocationValue;
+        nodeLocationValue++;
     }
 
-    return nodeLocation;
+    return nodeLocationValue;
 }
 
 //void *getBlock(FILE *inputFile, long offsetValue, long blockSize) {
