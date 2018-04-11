@@ -204,7 +204,7 @@ boolean defragment(char *inputFile) {
         fclose(outputPtr);
         fclose(finalOutputPtr);
 
-        //open and read both files into memory
+        //open and read both files into memory for debugging purposes...
         filePtr = fopen(inputFileName, readingFlag);
         outputPtr = fopen(outputFinalFileName, readingFlag);
 
@@ -235,7 +235,7 @@ boolean defragment(char *inputFile) {
 
         inode *oldInodePtr = allOfOldFile + SIZEOFSUPERBLOCK + SIZEOFBOOTBLOCK + superblockPtr->inode_offset + 3 * sizeof(inode);
         inode *newInodePtr = allOfNewFile + SIZEOFSUPERBLOCK + SIZEOFBOOTBLOCK + superblockPtr->inode_offset + 3 * sizeof(inode);
-        newDataRegion = allOfNewFile + SIZEOFBOOTBLOCK + SIZEOFSUPERBLOCK + superblockPtr->data_offset;
+        newDataRegion = allOfNewFile + SIZEOFBOOTBLOCK + SIZEOFSUPERBLOCK + superblockPtr->data_offset * size;
 
         outputFile(oldInodePtr, newInodePtr, size, dataBlockPtr, newDataRegion, "old 3\0", "new 3\0");
 
