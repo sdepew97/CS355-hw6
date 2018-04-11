@@ -186,7 +186,8 @@ boolean defragment(char *inputFile) {
         //TODO: close files once done! and remove error checking, here!
 
         //TODO: remove testing code at end
-        outputPtr = fopen("datafile-frag-defrag", readingFlag);
+        filePtr = fopen(inputFileName, readingFlag);
+        inodePtr = fseek(filePtr, SIZEOFBOOTBLOCK + SIZEOFSUPERBLOCK + superblockPtr->inode_offset, SEEK_SET);
         fseek(outputPtr, SIZEOFBOOTBLOCK + SIZEOFSUPERBLOCK + superblockPtr->inode_offset, SEEK_SET);
         inode *newFileInodeStart = (inode *) outputPtr;
         fseek(outputPtr, SIZEOFBOOTBLOCK + SIZEOFSUPERBLOCK + superblockPtr->data_offset, SEEK_SET);
