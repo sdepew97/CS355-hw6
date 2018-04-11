@@ -200,7 +200,12 @@ long orderDBlocks(long nodeLocation, inode **inodePtr, void *dataPtr, int size, 
     long numBlocks = ceilf(divisionResult); //number of blocks used, total (take ceiling)
     long nodeLocationValue = nodeLocation;
 
-    //all of array is filled
+    if(numBlocks > N_DBLOCKS) {
+        numBlocks = N_DBLOCKS;
+    } else {
+        //don't have to adjust value to make it work
+    }
+
     for (int i = 0; i < numBlocks; i++) {
         void *dataBlock = (dataPtr + (*inodePtr)->dblocks[i] * size); //TODO: check computation
         //dataBlock is now pointing to the data block to move (put in current node location and set array value accordingly)
