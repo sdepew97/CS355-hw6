@@ -203,6 +203,7 @@ boolean defragment(char *inputFile) {
             perror("Malloc failed.\n");
             return FALSE;
         }
+        fread(allOfOldFile, oldFileSize, 1, filePtr); //TODO: recognize here if read was over maximum allowed size!
 
         fseek(outputPtr, 0L, SEEK_END);
         long newFileSize = ftell(outputPtr);
@@ -214,6 +215,7 @@ boolean defragment(char *inputFile) {
             perror("Malloc failed.\n");
             return FALSE;
         }
+        fread(allOfNewFile, newFileSize, 1, outputPtr); //TODO: recognize here if read was over maximum allowed size!
 
         inode *oldInodePtr = allOfOldFile + SIZEOFSUPERBLOCK + SIZEOFBOOTBLOCK + superblockPtr->inode_offset + 3 * sizeof(inode);
         inode *newInodePtr = allOfNewFile + SIZEOFSUPERBLOCK + SIZEOFBOOTBLOCK + superblockPtr->inode_offset + 3 * sizeof(inode);
