@@ -235,7 +235,7 @@ boolean defragment(char *inputFile) {
 
         inode *oldInodePtr = allOfOldFile + SIZEOFSUPERBLOCK + SIZEOFBOOTBLOCK + superblockPtr->inode_offset + 3 * sizeof(inode);
         inode *newInodePtr = allOfNewFile + SIZEOFSUPERBLOCK + SIZEOFBOOTBLOCK + superblockPtr->inode_offset + 3 * sizeof(inode);
-        newDataRegion = allOfNewFile + SIZEOFBOOTBLOCK + SIZEOFSUPERBLOCK + superblockPtr->data_offset * size;
+        newDataRegion = allOfNewFile + offsetBytes(size, superblockPtr->data_offset);
 
         outputFile(oldInodePtr, newInodePtr, size, dataBlockPtr, newDataRegion, "old 3\0", "new 3\0");
 
