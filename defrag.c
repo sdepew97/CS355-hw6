@@ -122,65 +122,53 @@ boolean defragment(char *inputFile) {
         inode *inodePtr = (inode *) (((void *) allOfInputFile) + firstNodeOffsetInFile);
         void *dataBlockPtr = (((void *) allOfInputFile) + dataBlockOffsetInFile);
 
-        //print inodes
+        //print inodes and data blocks prior to reorganization...
         printf("head of inode list %d\n", superblockPtr->free_inode);
         printInodes(inodePtr, size, superblockPtr->inode_offset, superblockPtr->data_offset);
         printf("head of free list %d\n", superblockPtr->free_block);
         printDataBlocks(dataBlockPtr, size, superblockPtr->data_offset, superblockPtr->swap_offset);
 
-//
-//        //get file pointer for input to point to first inode, now by asking for offset from start
-////        rewind(filePtr);
-//        int returnFSeek = fseek(filePtr, firstNodeOffsetInFile, SEEK_SET); //TODO: error check here
-//        long currentDataBlock = 0; //start the counter that keeps track of the data blocks
-//
-//        //TODO: only have one fread
-//
-//        //read all the inodes
-//        for(int i=0; i<NUMINODES; i++) {
-//            //set file pointer to proper location here before reading next inode!
-//            returnFSeek = fseek(filePtr, firstNodeOffsetInFile + i * sizeof(inode),
-//                                SEEK_SET); //TODO: error check here
-//            fread(inodePtr, sizeof(inode), 1, filePtr);
-//            //check if inode is free or not...if not free, then do data management and organization (otherwise, just output to output file...)
-//            if (inodePtr->nlink == UNUSED) {
-//                //simply output inode to file without any worries
-//                //Note: ith node is current inode/index into inodes array
-//                //location to write to is inodeoffsetBytes in the output file!
-//                returnFSeek = fseek(outputPtr, firstNodeOffsetInFile + i * sizeof(inode),
-//                                    SEEK_SET); //TODO: error check here
-//                fwrite(inodePtr, sizeof(inode), 1, outputPtr);
-//            } else {
-//                //TODO: flesh out with proper writing of data blocks to output file and adjusting the boot blocks values!
-//                //check how much nesting is used, here
-//                if (inodePtr->size <= DBLOCKS) {
-//                    //have to put these blocks into order...
-////                    currentDataBlock = orderDBlocks(currentDataBlock, &inodePtr, dataBlockOffsetInFile, size, filePtr, outputPtr);
-//                } else if (inodePtr->size > DBLOCKS && inodePtr->size <= IBLOCKS) {
-////                    currentDataBlock = orderDBlocks(currentDataBlock, &inodePtr, dataBlockOffsetInFile, size, filePtr, outputPtr);
-//
-//                } else if (inodePtr->size > IBLOCKS && inodePtr->size <= I2BLOCKS) {
-////                    currentDataBlock = orderDBlocks(currentDataBlock, &inodePtr, dataBlockOffsetInFile, size, filePtr, outputPtr);
-//
-//                } else if (inodePtr->size > I2BLOCKS && inodePtr->size <= I3BLOCKS) {
-////                    currentDataBlock = orderDBlocks(currentDataBlock, &inodePtr, dataBlockOffsetInFile, size, filePtr, outputPtr);
-//
-//                } else { //last one is an error, since cannot use more than I3BLOCKS...
-//
-//                }
-//
-//                //write modified inode to file! :) (i is location of inode...)
-//                returnFSeek = fseek(outputPtr, firstNodeOffsetInFile + i * sizeof(inode),
-//                                    SEEK_SET); //TODO: error check here
-//                fwrite(inodePtr, sizeof(inode), 1, outputPtr);
-//            }
-//
-//        }
-//
+        //write original superblock and inodes to output file, so that reorganization can occur of data blocks
+        fwrite(superblockPtr, SIZEOFSUPERBLOCK, 1, outputPtr);
+        fwrite((((void *) superblockPtr) + SIZEOFSUPERBLOCK), superblockPtr->data_offset * size, 1, outputPtr); //TODO: check this is the region I want to be writing...??
+
+        long currentDataBlock = 0; //start the counter that keeps track of the data blocks that are being reorganized...
+        inode *currentInode = inodePtr;
+
+        //read all the inodes and reorganize the data blocks
+        for(int i=0; i<NUMINODES; i++) {
+            //check if inode is free or not...if not free, then do data management and organization (otherwise, just output to output file...)
+            if (currentInode->nlink == UNUSED) {
+                //simply leave inode as is without any worries, since it will get re-copied at end
+            } else {
+                //TODO: flesh out with proper writing of data blocks to output file and adjusting the boot blocks values!
+                //check how much nesting is used, here
+                if (currentInode->size <= DBLOCKS) {
+                    //have to put these blocks into order...
+//                    currentDataBlock = orderDBlocks(currentDataBlock, &inodePtr, dataBlockOffsetInFile, size, filePtr, outputPtr);
+                } else if (currentInode->size > DBLOCKS && currentInode->size <= IBLOCKS) {
+//                    currentDataBlock = orderDBlocks(currentDataBlock, &inodePtr, dataBlockOffsetInFile, size, filePtr, outputPtr);
+
+                } else if (currentInode->size > IBLOCKS && currentInode->size <= I2BLOCKS) {
+//                    currentDataBlock = orderDBlocks(currentDataBlock, &inodePtr, dataBlockOffsetInFile, size, filePtr, outputPtr);
+
+                } else if (currentInode->size > I2BLOCKS && currentInode->size <= I3BLOCKS) {
+//                    currentDataBlock = orderDBlocks(currentDataBlock, &inodePtr, dataBlockOffsetInFile, size, filePtr, outputPtr);
+
+                } else { //last one is an error, since cannot use more than I3BLOCKS...
+
+                }
+            }
+
+            //update currentInode's value
+            currentInode = ((void *) currentInode) + sizeof(inode);
+        }
+
+        //TODO: rewrite inode and super block regions to file now that they're modified correctly! (the image being held in memory is correct for superblock-inode region)
 //        //write the superblock to the output file
-////        fwrite(superblockPtr, SIZEOFBOOTBLOCK, 1, outputPtr);
+//        fwrite(superblockPtr, SIZEOFBOOTBLOCK, 1, outputPtr);
 //        //TODO: free all pointers as needed!!
-////        free(superblockPtr); //TODO: put where best!!
+//        free(superblockPtr); //TODO: put where best!!
 //
         return TRUE; //TODO: remove once not debugging...
     } else {
