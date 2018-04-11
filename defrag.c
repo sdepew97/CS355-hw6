@@ -123,9 +123,9 @@ boolean defragment(char *inputFile) {
         void *dataBlockPtr = (((void *) allOfInputFile) + dataBlockOffsetInFile);
 
         //print inodes
-        printf("head of inode list\n", superblockPtr->free_inode);
+        printf("head of inode list %d\n", superblockPtr->free_inode);
         printInodes(inodePtr, size, superblockPtr->inode_offset, superblockPtr->data_offset);
-        printf("head of free list\n", superblockPtr->free_block);
+        printf("head of free list %d\n", superblockPtr->free_block);
         printDataBlocks(dataBlockPtr, size, superblockPtr->data_offset, superblockPtr->swap_offset);
 
 //
