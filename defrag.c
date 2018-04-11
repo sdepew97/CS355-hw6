@@ -243,9 +243,9 @@ void printInodes(inode *startInodeRegion, int blockSize, int inodeOffset, int da
     for(int i=0; i<numInodes; i++){
         printf("inode %d, next inode %d, nlink %d, size %d\n", i, currentInode->next_inode, currentInode->nlink, currentInode->size);
         printf("dblocks:\n");
-//        for(int j=0; i<N_DBLOCKS; j++) {
-//            printf("block: %d, contents: %d\n", j, currentInode->dblocks[j]);
-//        }
+        for(int j=0; i<N_DBLOCKS; j++) {
+            printf("block: %d, contents: %d\n", j, currentInode->dblocks[j]);
+        }
 //        for(int k=0; k<N_IBLOCKS; k++) {
 //            printf("iblock: %d, contents %d\n", k, currentInode->iblocks[k]);
 //        }
