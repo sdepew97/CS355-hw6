@@ -202,7 +202,7 @@ boolean defragment(char *inputFile) {
         //TODO: close files once done! and remove error checking, here!
         fclose(filePtr);
         fclose(outputPtr);
-
+        fclose(finalOutputPtr);
 
         //open and read both files into memory
         filePtr = fopen(inputFileName, readingFlag);
