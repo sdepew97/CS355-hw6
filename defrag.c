@@ -151,7 +151,7 @@ boolean defragment(char *inputFile) {
                     printf("got here\n");
                     currentDataBlock = orderDBlocks(currentDataBlock, &currentInode, dataBlockPtr, size, outputPtr);
                 } else if (currentInode->size > DBLOCKS && currentInode->size <= IBLOCKS) {
-                    currentDataBlock = orderDBlocks(currentDataBlock, &currentInode, dataBlockPtr, size, outputPtr);
+//                    currentDataBlock = orderDBlocks(currentDataBlock, &currentInode, dataBlockPtr, size, outputPtr);
 
                 } //TODO: check if this works!
                 else if (currentInode->size > IBLOCKS && currentInode->size <= I2BLOCKS) {
