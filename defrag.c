@@ -206,7 +206,7 @@ boolean defragment(char *inputFile) {
 
         //open and read both files into memory
         filePtr = fopen(inputFileName, readingFlag);
-        outputPtr = fopen(outputFileName, readingFlag);
+        outputPtr = fopen(outputFinalFileName, readingFlag);
 
         //File reading into memory
         fseek(filePtr, 0L, SEEK_END);
