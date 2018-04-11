@@ -260,7 +260,7 @@ void printDataBlocks(void *startDataRegion, int blockSize, int dataOffset, int s
     void *currentBlock = startDataRegion;
 
     for(int i=0; i<numBlocks; i++) {
-        printf("Block Value: %d\n", ((block *) currentBlock)->next);
+        printf("Block Index: %d, Block Value: %d\n", i, ((block *) currentBlock)->next);
         currentBlock = (currentBlock + blockSize);
     }
 }
