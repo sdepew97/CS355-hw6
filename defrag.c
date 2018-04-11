@@ -193,7 +193,7 @@ boolean defragment(char *inputFile) {
  */
 long orderDBlocks(long nodeLocation, inode **inodePtr, void *dataPtr, int size, FILE *outputFile) {
     //put the DBlocks in order
-    int numBlocks = ceil((*inodePtr)->size / size); //number of blocks used, total (take ceiling)
+    int numBlocks = ceil((float) (*inodePtr)->size / (float) size); //number of blocks used, total (take ceiling)
     long nodeLocationValue = nodeLocation;
 
     //all of array is filled
