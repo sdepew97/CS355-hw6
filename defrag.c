@@ -189,7 +189,7 @@ boolean defragment(char *inputFile) {
 
         //Write new inode region! and write the entire file!
         outputPtr = fopen(outputFileName, readingFlag);
-        void *newDataRegion = malloc((superblockPtr->swap_offset - superblockPtr->data_offset) * size);
+        void *newDataRegion = malloc((superblockPtr->swap_offset - superblockPtr->data_offset) * size); //TODO: catch memory leaks!
         fseek(outputPtr, SIZEOFBOOTBLOCK + SIZEOFSUPERBLOCK + superblockPtr->data_offset, SEEK_SET);
         fread(newDataRegion, ((superblockPtr->swap_offset - superblockPtr->data_offset) * size), 1, outputPtr);
 
@@ -235,7 +235,7 @@ boolean defragment(char *inputFile) {
 
         inode *oldInodePtr = allOfOldFile + SIZEOFSUPERBLOCK + SIZEOFBOOTBLOCK + superblockPtr->inode_offset + 3 * sizeof(inode);
         inode *newInodePtr = allOfNewFile + SIZEOFSUPERBLOCK + SIZEOFBOOTBLOCK + superblockPtr->inode_offset + 3 * sizeof(inode);
-        void *newDataRegion = allOfNewFile + SIZEOFBOOTBLOCK + SIZEOFSUPERBLOCK + superblockPtr->data_offset;
+        newDataRegion = allOfNewFile + SIZEOFBOOTBLOCK + SIZEOFSUPERBLOCK + superblockPtr->data_offset;
 
         outputFile(oldInodePtr, newInodePtr, size, dataBlockPtr, newDataRegion, "old 3\0", "new 3\0");
 
