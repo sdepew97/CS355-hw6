@@ -184,16 +184,42 @@ boolean defragment(char *inputFile) {
         }
 
         //TODO: close files once done! and remove error checking, here!
+        fclose(filePtr);
+        fclose(outputPtr);
 
-        //TODO: remove testing code at end
+
+        //open and read both files into memory
         filePtr = fopen(inputFileName, readingFlag);
-        fseek(filePtr, SIZEOFBOOTBLOCK + SIZEOFSUPERBLOCK + superblockPtr->inode_offset, SEEK_SET);
-        inodePtr = (inode *) filePtr;
-        fseek(outputPtr, SIZEOFBOOTBLOCK + SIZEOFSUPERBLOCK + superblockPtr->inode_offset, SEEK_SET);
-        inode *newFileInodeStart = (inode *) outputPtr;
-        fseek(outputPtr, SIZEOFBOOTBLOCK + SIZEOFSUPERBLOCK + superblockPtr->data_offset, SEEK_SET);
-        void *newDataRegion = (void *) outputPtr;
-        outputFile((inode *) inodePtr + 3, (inode *) newFileInodeStart + 3, size, dataBlockPtr, newDataRegion, "old 3\0", "new 3\0");
+        outputPtr = fopen(outputFileName, readingFlag);
+
+        //File reading into memory
+        fseek(filePtr, 0L, SEEK_END);
+        long oldFileSize = ftell(filePtr);
+        rewind(filePtr);
+        printf("Number bytes in file: %ld\n", oldFileSize);
+        void *allOfOldFile = malloc(oldFileSize); //TODO: free this at the end!
+        if (allOfOldFile == NULL) {
+            //malloc failed
+            perror("Malloc failed.\n");
+            return FALSE;
+        }
+
+        fseek(outputPtr, 0L, SEEK_END);
+        long newFileSize = ftell(outputPtr);
+        rewind(outputPtr);
+        printf("Number bytes in file: %ld\n", newFileSize);
+        void *allOfNewFile = malloc(newFileSize); //TODO: free this at the end!
+        if (allOfNewFile == NULL) {
+            //malloc failed
+            perror("Malloc failed.\n");
+            return FALSE;
+        }
+
+        inode *oldInodePtr = allOfOldFile + SIZEOFSUPERBLOCK + SIZEOFBOOTBLOCK + superblockPtr->inode_offset + 3 * sizeof(inode);
+        inode *newInodePtr = allOfNewFile + SIZEOFSUPERBLOCK + SIZEOFBOOTBLOCK + superblockPtr->inode_offset + 3 * sizeof(inode);
+        void *newDataRegion = allOfNewFile + SIZEOFBOOTBLOCK + SIZEOFSUPERBLOCK + superblockPtr->data_offset;
+
+        outputFile(oldInodePtr, newInodePtr, size, dataBlockPtr, newDataRegion, "old 3\0", "new 3\0");
 
         //print inodes and data blocks prior to reorganization..., output swap region, and make free list, again
         //TODO: build free list, here with currentDataBlock as the head of the list!
