@@ -29,6 +29,7 @@ int main(int argc, char *argv[]) {
     } else {
         //if there are fewer than or more than two arguments to the command line, an error message with how to run the program should print
         printDirections();
+        printf("size of int %ld\n", sizeof(int));
     }
 
     return 0;
@@ -128,7 +129,7 @@ boolean defragment(char *inputFile) {
         printf("head of inode list %d\n", superblockPtr->free_inode);
         printInodes(inodePtr, size, superblockPtr->inode_offset, superblockPtr->data_offset);
         printf("head of free list %d\n", superblockPtr->free_block);
-        printDataBlocks(dataBlockPtr, size, superblockPtr->data_offset, superblockPtr->swap_offset);
+//        printDataBlocks(dataBlockPtr, size, superblockPtr->data_offset, superblockPtr->swap_offset);
 
         //write original superblock and inodes to output file, so that reorganization can occur of data blocks
         fwrite(superblockPtr, SIZEOFSUPERBLOCK, 1, outputPtr);
@@ -144,22 +145,35 @@ boolean defragment(char *inputFile) {
             if (currentInode->nlink == UNUSED) {
                 //simply leave inode as is without any worries, since it will get re-copied at end
             } else {
-                //TODO: flesh out with proper writing of data blocks to output file and adjusting the boot blocks values!
+                //TODO: flesh out with proper writing of data blocks to output file and adjusting the super blocks values!
                 //check how much nesting is used, here
                 if (currentInode->size <= DBLOCKS) {
-                    //have to put these blocks into order...
-                    printf("got here\n");
-                    currentDataBlock = orderDBlocks(currentDataBlock, &currentInode, dataBlockPtr, size, outputPtr);
+                    float divisionResult = (float) currentInode->size / (float) size;
+                    long numBlocks = ceilf(divisionResult); //number of blocks used, total (take ceiling)
+
+                    currentDataBlock = orderDBlocks(numBlocks, currentDataBlock, currentInode->dblocks, dataBlockPtr,
+                                                    size, outputPtr);
                 } else if (currentInode->size > DBLOCKS && currentInode->size <= IBLOCKS) {
-                    currentDataBlock = orderDBlocks(currentDataBlock, &currentInode, dataBlockPtr, size, outputPtr);
-                    currentDataBlock = orderIBlocks(currentDataBlock, &currentInode, dataBlockPtr, size, outputPtr);
+                    float divisionResult = (float) currentInode->size / (float) size;
+                    long numBlocks = ceilf(divisionResult); //number of blocks used, total (take ceiling)
+
+                    currentDataBlock = orderDBlocks(N_DBLOCKS, currentDataBlock, currentInode->dblocks, dataBlockPtr,
+                                                    size, outputPtr);
+                    numBlocks -= 10;
+
+                    //calculate number of blocks total and number of indirect layers required to get those blocks...
+                    divisionResult = ((float) numBlocks) / ((float) (size) / (float) (sizeof(int)));
+                    long numIndirect = ceilf(divisionResult);
+                    printf("numIndirect: %ld\n", numIndirect);
+                    currentDataBlock = orderIBlocks(numIndirect, numBlocks, currentDataBlock, currentInode->iblocks,
+                                                    dataBlockPtr, size, outputPtr);
                 } //TODO: check if this works!
                 else if (currentInode->size > IBLOCKS && currentInode->size <= I2BLOCKS) {
 //                    currentDataBlock = orderDBlocks(currentDataBlock, &inodePtr, dataBlockOffsetInFile, size, filePtr, outputPtr);
-
+                    //TODO: implement this one
                 } else if (currentInode->size > I2BLOCKS && currentInode->size <= I3BLOCKS) {
 //                    currentDataBlock = orderDBlocks(currentDataBlock, &inodePtr, dataBlockOffsetInFile, size, filePtr, outputPtr);
-
+                    //TODO: implement this one
                 } else { //last one is an error, since cannot use more than I3BLOCKS...
 
                 }
@@ -169,10 +183,18 @@ boolean defragment(char *inputFile) {
             currentInode = ((void *) currentInode) + sizeof(inode);
         }
 
-        //print inodes and data blocks prior to reorganization...
+        //TODO: close files once done! and remove error checking, here!
+        fseek(outputPtr, SIZEOFBOOTBLOCK + SIZEOFSUPERBLOCK + superblockPtr->inode_offset, SEEK_SET);
+        inode *newFileInodeStart = (inode *) outputPtr;
+        fseek(outputPtr, SIZEOFBOOTBLOCK + SIZEOFSUPERBLOCK + superblockPtr->data_offset, SEEK_SET);
+        void *newDataRegion = (void *) outputPtr;
+        outputFile((inode *) inodePtr + 3, (inode *) newFileInodeStart + 3, size, dataBlockPtr, newDataRegion, "old 3\n", "new 3\n");
+
+        //print inodes and data blocks prior to reorganization..., output swap region, and make free list, again
+        //TODO: build free list, here with currentDataBlock as the head of the list!
         printf("Final Print\n");
         printf("head of inode list %d\n", superblockPtr->free_inode);
-        printInodes(inodePtr, size, superblockPtr->inode_offset, superblockPtr->data_offset);
+//        printInodes(inodePtr, size, superblockPtr->inode_offset, superblockPtr->data_offset);
         printf("head of free list %d\n", superblockPtr->free_block);
 //        printDataBlocks(dataBlockPtr, size, superblockPtr->data_offset, superblockPtr->swap_offset);
 
@@ -195,68 +217,46 @@ boolean defragment(char *inputFile) {
 /*
  * Method returns updated current node location with location of where to put next node! (-1 if failure)
  */
-long orderDBlocks(long nodeLocation, inode **inodePtr, void *dataPtr, int size, FILE *outputFile) {
-    //put the DBlocks in order
-    float divisionResult = (float) (*inodePtr)->size / (float) size;
-    long numBlocks = ceilf(divisionResult); //number of blocks used, total (take ceiling)
+long orderDBlocks(int numToWrite, long nodeLocation, int *offsets, void *dataPtr, int size, FILE *outputFile) {
     long nodeLocationValue = nodeLocation;
 
-    if(numBlocks > N_DBLOCKS) {
-        numBlocks = N_DBLOCKS;
-    } else {
-        //don't have to adjust value to make it work
-    }
-
-    for (int i = 0; i < numBlocks; i++) {
-        void *dataBlock = (dataPtr + (*inodePtr)->dblocks[i] * size); //TODO: check computation
+    for (int i = 0; i < numToWrite; i++) {
+        void *dataBlock = (dataPtr + offsets[i] * size); //TODO: check computation
         //dataBlock is now pointing to the data block to move (put in current node location and set array value accordingly)
         fwrite(dataBlock, size, 1, outputFile);
-        (*inodePtr)->dblocks[i] = nodeLocationValue;
+        offsets[i] = nodeLocationValue;
         nodeLocationValue++;
     }
 
     return nodeLocationValue;
 }
 
-//TODO: check today in office hours this is correct!
+//TODO: check today in office hours this is correct! (no, got better idea)
 /*
  * Method returns updated current node location with location of where to put next node! (-1 if failure)
  */
-long orderIBlocks(long nodeLocation, inode **inodePtr, void *dataPtr, int size, FILE *outputFile) {
-    //put the DBlocks in order
-    float divisionResult = (float) (*inodePtr)->size / (float) size;
-    long numBlocks = ceilf(divisionResult); //number of blocks used, total (take ceiling)
+long orderIBlocks(int numToWriteIBlock, int numToWriteData, long nodeLocation, int *offsets, void *dataPtr, int size, FILE *outputFile) {
     long nodeLocationValue = nodeLocation;
-    numBlocks -= N_DBLOCKS; //remove 10, since already handled
-    long numIndirect = size / PTRSIZE;
-    void *currentIBlock;
+    long maxArray = size / sizeof(int);
+    void *currentIBlockOffsetsValue;
     void *currentBlock;
-    int blockToMove;
 
-    for (int i = 0; i < N_IBLOCKS; i++) {
-        if (numBlocks <= 0) {
-            break;
+    int numToWrite = numToWriteData;
+
+    for (int i = 0; i < numToWriteIBlock; i++) {
+        //write out indirect block to file
+        currentIBlockOffsetsValue = (dataPtr + (offsets[i] * size));
+        offsets[i] = nodeLocationValue;
+        fwrite(currentIBlockOffsetsValue, size, 1, outputFile);
+
+        //write out data blocks to file
+        if (numToWrite > maxArray) {
+            nodeLocationValue = orderDBlocks(maxArray, nodeLocationValue, (int *) currentIBlockOffsetsValue, dataPtr,
+                                             size, outputFile);
+            numToWrite -= maxArray;
         } else {
-            currentIBlock = (dataPtr + (*inodePtr)->iblocks[i] * size);
-            //move currentIBlock in output file
-            (*inodePtr)->iblocks[i] = nodeLocationValue;
-            fwrite(currentIBlock, size, 1, outputFile);
-            nodeLocationValue++;
-
-            for (int j = 0; j < numIndirect; j++) {
-                if (numBlocks <= 0) {
-                    break;
-                } else {
-                    blockToMove = *((int *) (currentIBlock + j * PTRSIZE));
-                    currentBlock = (dataPtr + blockToMove * size); //TODO: check today in office hours
-                    //reposition current block and update ptr in indirect block!
-                    fwrite(currentBlock, size, 1, outputFile);
-                    //TODO: check with Dianna today in office hours (ptr arithmetic)
-                    *((int *) (currentIBlock + j * PTRSIZE)) = nodeLocationValue;
-                    nodeLocationValue++;
-                    numBlocks--; //update the number of nodes to place, too
-                }
-            }
+            nodeLocationValue = orderDBlocks(numToWrite, nodeLocationValue, (int *) currentIBlockOffsetsValue, dataPtr,
+                                             size, outputFile);
         }
     }
 
@@ -304,5 +304,38 @@ void printDataBlocks(void *startDataRegion, int blockSize, int dataOffset, int s
     for(int i=0; i<numBlocks; i++) {
         printf("Block Index: %d, Block Value: %d\n", i, ((block *) currentBlock)->next);
         currentBlock = (currentBlock + blockSize);
+    }
+}
+
+/*
+ * Error checking method //TODO: write to allow for indirect files!
+ */
+void outputFile(inode *fileToOutputOriginal, inode *fileToOutputNew, int size, void *dataRegionOld, void *dataRegionNew, char *oldOutputName, char *newOutputName) {
+    char *writingFlag = "wb+\0";
+    char *outputOldFileName = strdup(oldOutputName); //TODO: free at the end!!!
+    char *outputNewFileName = strdup(newOutputName); //TODO: free at the end!!!
+    void *blockToOutput;
+
+    //File opening
+    FILE *oldOutput = fopen(outputOldFileName, writingFlag);
+    FILE *newOutput = fopen(outputNewFileName, writingFlag);
+
+    //read and output old file's data blocks
+    float divisionResult = (float) fileToOutputOriginal->size / (float) size;
+    long numBlocks = ceilf(divisionResult); //number of blocks used, total (take ceiling)
+
+    for(int i=0; i<numBlocks; i++) {
+        blockToOutput = dataRegionOld + fileToOutputOriginal->dblocks[i] * size;
+        fwrite(blockToOutput, size, 1, oldOutput);
+    }
+
+    //read and output new file's data blocks
+
+    divisionResult = (float) fileToOutputNew->size / (float) size;
+    numBlocks = ceilf(divisionResult); //number of blocks used, total (take ceiling)
+
+    for(int i=0; i<numBlocks; i++) {
+        blockToOutput = dataRegionNew + fileToOutputNew->dblocks[i] * size;
+        fwrite(blockToOutput, size, 1, newOutput);
     }
 }
