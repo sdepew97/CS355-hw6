@@ -4,6 +4,7 @@
 #include <sys/stat.h>
 #include <stdlib.h>
 #include <limits.h>
+#include <math.h>
 #include "defrag.h"
 #include "boolean.h"
 
@@ -146,7 +147,7 @@ boolean defragment(char *inputFile) {
                 if (currentInode->size <= DBLOCKS) {
                     //have to put these blocks into order...
                     printf("got here\n");
-//                    currentDataBlock = orderDBlocks(currentDataBlock, &inodePtr, dataBlockOffsetInFile, size, filePtr, outputPtr);
+                    currentDataBlock = orderDBlocks(currentDataBlock, &inodePtr, dataBlockOffsetInFile, size, filePtr, outputPtr);
                 } else if (currentInode->size > DBLOCKS && currentInode->size <= IBLOCKS) {
 //                    currentDataBlock = orderDBlocks(currentDataBlock, &inodePtr, dataBlockOffsetInFile, size, filePtr, outputPtr);
 
@@ -164,6 +165,13 @@ boolean defragment(char *inputFile) {
             //update currentInode's value
             currentInode = ((void *) currentInode) + sizeof(inode);
         }
+
+        //print inodes and data blocks prior to reorganization...
+        printf("head of inode list %d\n", superblockPtr->free_inode);
+        printInodes(inodePtr, size, superblockPtr->inode_offset, superblockPtr->data_offset);
+        printf("head of free list %d\n", superblockPtr->free_block);
+        printDataBlocks(dataBlockPtr, size, superblockPtr->data_offset, superblockPtr->swap_offset);
+
 
         //TODO: rewrite inode and super block regions to file now that they're modified correctly! (the image being held in memory is correct for superblock-inode region)
 //        //write the superblock to the output file
@@ -183,33 +191,21 @@ boolean defragment(char *inputFile) {
 /*
  * Method returns updated current node location with location of where to put next node! (-1 if failure)
  */
-long orderDBlocks(long currentNodeLocation, inode **inodePtr, long dataOffsetLocationBytes, int size, FILE *inputFile, FILE *outputFile) {
+long orderDBlocks(long nodeLocation, inode **inodePtr, void *dataPtr, int size, FILE *outputFile) {
     //put the DBlocks in order
-    int returnFSeek;
-    long updatedCurrentNodeLocation = currentNodeLocation;
-    float numBlocks = (*inodePtr)->size /
-                      size; //number of blocks used, total //ceiling TODO: see if this value could end up being fractional? (yes, so how many actually used??)
+    int numBlocks = ceil((*inodePtr)->size / size); //number of blocks used, total (take ceiling)
+    long nodeLocation = nodeLocation;
 
-    //TODO: ask dianna about if fractions of blocks could end up being used and if so, do you round up to the nearest block value?
     //all of array is filled
-    if (numBlocks >= N_DBLOCKS) {
-        for (int i = 0; i < N_DBLOCKS; i++) {
-            void *dataBlock = getBlock(inputFile, (dataOffsetLocationBytes + size * (*inodePtr)->dblocks[i]),
-                                       size); //TODO: check computations (assuming ints are simply indices into data region?)
-            //dataBlock is now pointing to the data block to move (put in current node location and set array value accordingly)
-            returnFSeek = fseek(outputFile, dataOffsetLocationBytes + size * updatedCurrentNodeLocation,
-                                SEEK_SET); //TODO: error check here
-            fwrite(dataBlock, size, 1, outputFile);
-            (*inodePtr)->dblocks[i] = updatedCurrentNodeLocation;
-            updatedCurrentNodeLocation++;
-
-        }
-    } else {
-        //all of array is NOT filled, so only do things to blocks that are used
-        //TODO: Ask Dianna about this case with rounding etc...
+    for (int i = 0; i < numBlocks; i++) {
+        void *dataBlock = (dataPtr + (*inodePtr)->dblocks[i] * size); //TODO: check computation
+        //dataBlock is now pointing to the data block to move (put in current node location and set array value accordingly)
+        fwrite(dataBlock, size, 1, outputFile);
+        (*inodePtr)->dblocks[i] = nodeLocation;
+        nodeLocation++;
     }
 
-    return updatedCurrentNodeLocation;
+    return nodeLocation;
 }
 
 void *getBlock(FILE *inputFile, long offsetValue, long blockSize) {
