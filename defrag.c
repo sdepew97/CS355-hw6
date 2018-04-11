@@ -115,7 +115,8 @@ boolean defragment(char *inputFile) {
         //set some values based on superblock that will be useful
         int size = superblockPtr->size;
         //TODO: get offset of inode region and data region based on superblock values
-        long firstNodeOffsetInFile = offsetBytes(size, superblockPtr->inode_offset); //location of where FIRST inode starts in input file
+        long firstNodeOffsetInFile = offsetBytes(size,
+                                                 superblockPtr->inode_offset); //location of where FIRST inode starts in input file
         long dataBlockOffsetInFile = offsetBytes(size, superblockPtr->data_offset); //start of data region in file
         long swapBlockOffsetInFile = offsetBytes(size, superblockPtr->swap_offset);
         printf("Size: %d\n", size);
@@ -131,13 +132,14 @@ boolean defragment(char *inputFile) {
 
         //write original superblock and inodes to output file, so that reorganization can occur of data blocks
         fwrite(superblockPtr, SIZEOFSUPERBLOCK, 1, outputPtr);
-        fwrite((((void *) superblockPtr) + SIZEOFSUPERBLOCK), superblockPtr->data_offset * size, 1, outputPtr); //TODO: check this is the region I want to be writing...??
+        fwrite((((void *) superblockPtr) + SIZEOFSUPERBLOCK), superblockPtr->data_offset * size, 1,
+               outputPtr); //TODO: check this is the region I want to be writing...??
 
         long currentDataBlock = 0; //start the counter that keeps track of the data blocks that are being reorganized...
         inode *currentInode = inodePtr;
 
         //read all the inodes and reorganize the data blocks
-        for(int i=0; i<NUMINODES; i++) {
+        for (int i = 0; i < NUMINODES; i++) {
             //check if inode is free or not...if not free, then do data management and organization (otherwise, just output to output file...)
             if (currentInode->nlink == UNUSED) {
                 //simply leave inode as is without any worries, since it will get re-copied at end
@@ -149,9 +151,10 @@ boolean defragment(char *inputFile) {
                     printf("got here\n");
                     currentDataBlock = orderDBlocks(currentDataBlock, &currentInode, dataBlockPtr, size, outputPtr);
                 } else if (currentInode->size > DBLOCKS && currentInode->size <= IBLOCKS) {
-//                    currentDataBlock = orderDBlocks(currentDataBlock, &inodePtr, dataBlockOffsetInFile, size, filePtr, outputPtr);
+                    currentDataBlock = orderDBlocks(currentDataBlock, &currentInode, dataBlockPtr, size, outputPtr);
 
-                } else if (currentInode->size > IBLOCKS && currentInode->size <= I2BLOCKS) {
+                } //TODO: check if this works!
+                else if (currentInode->size > IBLOCKS && currentInode->size <= I2BLOCKS) {
 //                    currentDataBlock = orderDBlocks(currentDataBlock, &inodePtr, dataBlockOffsetInFile, size, filePtr, outputPtr);
 
                 } else if (currentInode->size > I2BLOCKS && currentInode->size <= I3BLOCKS) {
@@ -170,7 +173,7 @@ boolean defragment(char *inputFile) {
         printf("head of inode list %d\n", superblockPtr->free_inode);
         printInodes(inodePtr, size, superblockPtr->inode_offset, superblockPtr->data_offset);
         printf("head of free list %d\n", superblockPtr->free_block);
-//        printDataBlocks(dataBlockPtr, size, superblockPtr->data_offset, superblockPtr->swap_offset);
+        printDataBlocks(dataBlockPtr, size, superblockPtr->data_offset, superblockPtr->swap_offset);
 
 
         //TODO: rewrite inode and super block regions to file now that they're modified correctly! (the image being held in memory is correct for superblock-inode region)
