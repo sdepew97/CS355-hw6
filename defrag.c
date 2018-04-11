@@ -174,7 +174,7 @@ boolean defragment(char *inputFile) {
         printf("head of inode list %d\n", superblockPtr->free_inode);
         printInodes(inodePtr, size, superblockPtr->inode_offset, superblockPtr->data_offset);
         printf("head of free list %d\n", superblockPtr->free_block);
-        printDataBlocks(dataBlockPtr, size, superblockPtr->data_offset, superblockPtr->swap_offset);
+//        printDataBlocks(dataBlockPtr, size, superblockPtr->data_offset, superblockPtr->swap_offset);
 
 
         //TODO: rewrite inode and super block regions to file now that they're modified correctly! (the image being held in memory is correct for superblock-inode region)
