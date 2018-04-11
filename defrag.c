@@ -147,7 +147,7 @@ boolean defragment(char *inputFile) {
                 if (currentInode->size <= DBLOCKS) {
                     //have to put these blocks into order...
                     printf("got here\n");
-                    currentDataBlock = orderDBlocks(currentDataBlock, &inodePtr, dataBlockOffsetInFile, size, filePtr, outputPtr);
+                    currentDataBlock = orderDBlocks(currentDataBlock, &currentInode, dataBlockPtr, size, outputPtr);
                 } else if (currentInode->size > DBLOCKS && currentInode->size <= IBLOCKS) {
 //                    currentDataBlock = orderDBlocks(currentDataBlock, &inodePtr, dataBlockOffsetInFile, size, filePtr, outputPtr);
 
@@ -208,13 +208,13 @@ long orderDBlocks(long nodeLocation, inode **inodePtr, void *dataPtr, int size, 
     return nodeLocation;
 }
 
-void *getBlock(FILE *inputFile, long offsetValue, long blockSize) {
-    void *dataBlock = malloc(blockSize);
-    //position file pointer, first...
-    int returnFSeek = fseek(inputFile, offsetValue, SEEK_SET);
-    fread(dataBlock, blockSize, 1, inputFile);
-    return dataBlock;
-}
+//void *getBlock(FILE *inputFile, long offsetValue, long blockSize) {
+//    void *dataBlock = malloc(blockSize);
+//    //position file pointer, first...
+//    int returnFSeek = fseek(inputFile, offsetValue, SEEK_SET);
+//    fread(dataBlock, blockSize, 1, inputFile);
+//    return dataBlock;
+//}
 
 //TODO: write "seek block" method to return the location of the block as a ptr? or the offset? not sure which
 
