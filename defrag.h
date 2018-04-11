@@ -7,6 +7,7 @@
 #include "boolean.h"
 
 #define SIZEOFBOOTBLOCK 512
+#define SIZEOFSUPERBLOCK 512
 #define N_DBLOCKS 10
 #define N_IBLOCKS 4
 #define PTRSIZE 4
@@ -53,5 +54,6 @@ boolean defragment(char *inputFile);
 long orderDBlocks(long currentNodeLocation, inode **inodePtr, long dataOffsetLocationBytes, int size, FILE *inputFile, FILE *outputFile);
 long offsetBytes(int blockSize, int offset);
 void *getBlock(FILE *inputFile, long offsetValue, long blockSize);
+void printInodes(inode *startInodeRegion, int blockSize, int inodeOffset, int dataOffset);
 
 #endif //HW6_MAIN_H

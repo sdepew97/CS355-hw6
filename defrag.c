@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <errno.h>
+#include <sys/stat.h>
 #include <stdlib.h>
 #include <limits.h>
 #include "defrag.h"
@@ -73,101 +74,113 @@ int parseCmd(int argc, char *argv[]) {
 }
 
 boolean defragment(char *inputFile) {
-    //Naming information
+    //File naming setup
     char *readingFlag = "rb+\0";
     char *writingFlag = "wb+\0";
     char *defragExtension = "-defrag\0";
-
     char *inputFileName = strdup(inputFile); //TODO: free at the end!!!
-
     char *outputFileName = malloc(strlen(inputFile) + strlen(defragExtension) + 1);
     strcpy(outputFileName, inputFile);
     strcat(outputFileName, defragExtension);
-    printf("created output name of %s\n", outputFileName);
-    printf("input file name of %s\n", inputFileName);
 
+    //File opening
     FILE *filePtr = fopen(inputFileName, readingFlag);
     FILE *outputPtr = fopen(outputFileName, writingFlag);
-    printf("File pointer values %p, %p\n", filePtr, outputPtr);
 
     if (filePtr != NULL && outputPtr != NULL) {
-    //filePtr and outputPtr are valid file pointers
+        //filePtr and outputPtr are valid file pointers
 
-    //transfer over boot block, first
-        void *bootBlockPtr = malloc(SIZEOFBOOTBLOCK);
-        if(bootBlockPtr == NULL) {
-            perror("more details");
+        //File reading into memory
+        fseek(filePtr, 0L, SEEK_END);
+        long inputFileSize = ftell(filePtr);
+        rewind(filePtr);
+        printf("Number bytes in file: %ld\n", inputFileSize);
+        void *allOfInputFile = malloc(inputFileSize); //TODO: free this at the end!
+        if (allOfInputFile == NULL) {
+            //malloc failed
+            perror("Malloc failed.\n");
+            return FALSE;
         }
-        fread(bootBlockPtr, SIZEOFBOOTBLOCK, 1, filePtr);
+
+        fread(allOfInputFile, inputFileSize, 1, filePtr); //TODO: recognize here if read was over maximum allowed size!
+
+        //transfer over boot block, first
+        void *bootBlockPtr = allOfInputFile;
         fwrite(bootBlockPtr, SIZEOFBOOTBLOCK, 1, outputPtr);
-        free(bootBlockPtr);
 
-        //TODO: error check malloc
-
-        //read in and store the superblock!
-        superblock *superblockPtr = malloc(sizeof(superblock));
-        fread(superblockPtr, sizeof(superblock), 1, filePtr);
+        //read in and store the superblock, inode region pointer, and data region pointers
+        superblock *superblockPtr = (allOfInputFile + SIZEOFBOOTBLOCK);
 
         //set some values based on superblock that will be useful
         int size = superblockPtr->size;
-        inode *inodePtr = malloc(sizeof(inode));
-
         //TODO: get offset of inode region and data region based on superblock values
         int firstNodeOffsetInFile = offsetBytes(size, superblockPtr->inode_offset); //location of where FIRST inode starts in input file
         int dataBlockOffsetInFile = offsetBytes(size, superblockPtr->data_offset); //start of data region in file
         int swapBlockOffsetInFile = offsetBytes(size, superblockPtr->swap_offset);
+        printf("Size: %d\n", size);
 
-        //get file pointer for input to point to first inode, now by asking for offset from start
-//        rewind(filePtr);
-        int returnFSeek = fseek(filePtr, firstNodeOffsetInFile, SEEK_SET); //TODO: error check here
-        long currentDataBlock = 0; //start the counter that keeps track of the data blocks
+        inode *inodePtr = (allOfInputFile + firstNodeOffsetInFile);
+        void *dataBlockPtr = (allOfInputFile + dataBlockOffsetInFile);
 
-        //read all the inodes
-        for(int i=0; i<NUMINODES; i++) {
-            //set file pointer to proper location here before reading next inode!
-            returnFSeek = fseek(outputPtr, firstNodeOffsetInFile + i * sizeof(inode),
-                                SEEK_SET); //TODO: error check here
-            fread(inodePtr, sizeof(inode), 1, filePtr);
-            //check if inode is free or not...if not free, then do data management and organization (otherwise, just output to output file...)
-            if (inodePtr->nlink == UNUSED) {
-                //simply output inode to file without any worries
-                //Note: ith node is current inode/index into inodes array
-                //location to write to is inodeoffsetBytes in the output file!
-                returnFSeek = fseek(outputPtr, firstNodeOffsetInFile + i * sizeof(inode),
-                                    SEEK_SET); //TODO: error check here
-                fwrite(inodePtr, sizeof(inode), 1, outputPtr);
-            } else {
-                //TODO: flesh out with proper writing of data blocks to output file and adjusting the boot blocks values!
-                //check how much nesting is used, here
-                if (inodePtr->size <= DBLOCKS) {
-                    //have to put these blocks into order...
-//                    currentDataBlock = orderDBlocks(currentDataBlock, &inodePtr, dataBlockOffsetInFile, size, filePtr, outputPtr);
-                } else if (inodePtr->size > DBLOCKS && inodePtr->size <= IBLOCKS) {
-//                    currentDataBlock = orderDBlocks(currentDataBlock, &inodePtr, dataBlockOffsetInFile, size, filePtr, outputPtr);
+        //print inodes
+        printInodes(inodePtr, size, superblockPtr->inode_offset, superblockPtr->data_offset);
 
-                } else if (inodePtr->size > IBLOCKS && inodePtr->size <= I2BLOCKS) {
-//                    currentDataBlock = orderDBlocks(currentDataBlock, &inodePtr, dataBlockOffsetInFile, size, filePtr, outputPtr);
 
-                } else if (inodePtr->size > I2BLOCKS && inodePtr->size <= I3BLOCKS) {
-//                    currentDataBlock = orderDBlocks(currentDataBlock, &inodePtr, dataBlockOffsetInFile, size, filePtr, outputPtr);
 
-                } else { //last one is an error, since cannot use more than I3BLOCKS...
-
-                }
-
-                //write modified inode to file! :) (i is location of inode...)
-                returnFSeek = fseek(outputPtr, firstNodeOffsetInFile + i * sizeof(inode),
-                                    SEEK_SET); //TODO: error check here
-                fwrite(inodePtr, sizeof(inode), 1, outputPtr);
-            }
-
-        }
-
-        //write the superblock to the output file
-//        fwrite(superblockPtr, SIZEOFBOOTBLOCK, 1, outputPtr);
-        //TODO: free all pointers as needed!!
-//        free(superblockPtr); //TODO: put where best!!
-
+//
+//        //get file pointer for input to point to first inode, now by asking for offset from start
+////        rewind(filePtr);
+//        int returnFSeek = fseek(filePtr, firstNodeOffsetInFile, SEEK_SET); //TODO: error check here
+//        long currentDataBlock = 0; //start the counter that keeps track of the data blocks
+//
+//        //TODO: only have one fread
+//
+//        //read all the inodes
+//        for(int i=0; i<NUMINODES; i++) {
+//            //set file pointer to proper location here before reading next inode!
+//            returnFSeek = fseek(filePtr, firstNodeOffsetInFile + i * sizeof(inode),
+//                                SEEK_SET); //TODO: error check here
+//            fread(inodePtr, sizeof(inode), 1, filePtr);
+//            //check if inode is free or not...if not free, then do data management and organization (otherwise, just output to output file...)
+//            if (inodePtr->nlink == UNUSED) {
+//                //simply output inode to file without any worries
+//                //Note: ith node is current inode/index into inodes array
+//                //location to write to is inodeoffsetBytes in the output file!
+//                returnFSeek = fseek(outputPtr, firstNodeOffsetInFile + i * sizeof(inode),
+//                                    SEEK_SET); //TODO: error check here
+//                fwrite(inodePtr, sizeof(inode), 1, outputPtr);
+//            } else {
+//                //TODO: flesh out with proper writing of data blocks to output file and adjusting the boot blocks values!
+//                //check how much nesting is used, here
+//                if (inodePtr->size <= DBLOCKS) {
+//                    //have to put these blocks into order...
+////                    currentDataBlock = orderDBlocks(currentDataBlock, &inodePtr, dataBlockOffsetInFile, size, filePtr, outputPtr);
+//                } else if (inodePtr->size > DBLOCKS && inodePtr->size <= IBLOCKS) {
+////                    currentDataBlock = orderDBlocks(currentDataBlock, &inodePtr, dataBlockOffsetInFile, size, filePtr, outputPtr);
+//
+//                } else if (inodePtr->size > IBLOCKS && inodePtr->size <= I2BLOCKS) {
+////                    currentDataBlock = orderDBlocks(currentDataBlock, &inodePtr, dataBlockOffsetInFile, size, filePtr, outputPtr);
+//
+//                } else if (inodePtr->size > I2BLOCKS && inodePtr->size <= I3BLOCKS) {
+////                    currentDataBlock = orderDBlocks(currentDataBlock, &inodePtr, dataBlockOffsetInFile, size, filePtr, outputPtr);
+//
+//                } else { //last one is an error, since cannot use more than I3BLOCKS...
+//
+//                }
+//
+//                //write modified inode to file! :) (i is location of inode...)
+//                returnFSeek = fseek(outputPtr, firstNodeOffsetInFile + i * sizeof(inode),
+//                                    SEEK_SET); //TODO: error check here
+//                fwrite(inodePtr, sizeof(inode), 1, outputPtr);
+//            }
+//
+//        }
+//
+//        //write the superblock to the output file
+////        fwrite(superblockPtr, SIZEOFBOOTBLOCK, 1, outputPtr);
+//        //TODO: free all pointers as needed!!
+////        free(superblockPtr); //TODO: put where best!!
+//
         return TRUE; //TODO: remove once not debugging...
     } else {
         return FALSE;
@@ -185,7 +198,7 @@ long orderDBlocks(long currentNodeLocation, inode **inodePtr, long dataOffsetLoc
     int returnFSeek;
     long updatedCurrentNodeLocation = currentNodeLocation;
     float numBlocks = (*inodePtr)->size /
-                      size; //number of blocks used, total //TODO: see if this value could end up being fractional? (yes, so how many actually used??)
+                      size; //number of blocks used, total //ceiling TODO: see if this value could end up being fractional? (yes, so how many actually used??)
 
     //TODO: ask dianna about if fractions of blocks could end up being used and if so, do you round up to the nearest block value?
     //all of array is filled
@@ -220,5 +233,25 @@ void *getBlock(FILE *inputFile, long offsetValue, long blockSize) {
 //TODO: write "seek block" method to return the location of the block as a ptr? or the offset? not sure which
 
 long offsetBytes(int blockSize, int offset) {
-    return (2 * SIZEOFBOOTBLOCK + blockSize * offset);
+    return (SIZEOFBOOTBLOCK + SIZEOFSUPERBLOCK + blockSize * offset);
+}
+
+void printInodes(inode *startInodeRegion, int blockSize, int inodeOffset, int dataOffset){
+    int numInodes = ((dataOffset-inodeOffset) * blockSize)/sizeof(inode);
+    printf("number inodes: %d\n", numInodes);
+    inode *currentInode = startInodeRegion;
+
+    for(int i=0; i<numInodes; i++){
+        currentInode = (currentInode + (i* sizeof(inode)));
+        printf("inode %d, next inode %d, nlink %d, size %d\n", i, currentInode->next_inode, currentInode->nlink, currentInode->size);
+        printf("dblocks:\n");
+//        for(int j=0; i<N_DBLOCKS; j++) {
+//            printf("block: %d, contents: %d\n", j, currentInode->dblocks[j]);
+//        }
+//        for(int k=0; k<N_IBLOCKS; k++) {
+//            printf("iblock: %d, contents %d\n", k, currentInode->iblocks[k]);
+//        }
+        printf("i2block %d\n", currentInode->i2block);
+        printf("i3block %d\n", currentInode->i3block);
+    }
 }
