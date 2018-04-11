@@ -109,7 +109,7 @@ boolean defragment(char *inputFile) {
         fwrite(bootBlockPtr, SIZEOFBOOTBLOCK, 1, outputPtr);
 
         //read in and store the superblock, inode region pointer, and data region pointers
-        superblock *superblockPtr = (allOfInputFile + SIZEOFBOOTBLOCK);
+        superblock *superblockPtr = (superblock *) (((void *) allOfInputFile) + SIZEOFBOOTBLOCK);
 
         //set some values based on superblock that will be useful
         int size = superblockPtr->size;
@@ -119,8 +119,8 @@ boolean defragment(char *inputFile) {
         long swapBlockOffsetInFile = offsetBytes(size, superblockPtr->swap_offset);
         printf("Size: %d\n", size);
 
-        inode *inodePtr = (((void *) allOfInputFile) + firstNodeOffsetInFile);
-        void *dataBlockPtr = (allOfInputFile + dataBlockOffsetInFile);
+        inode *inodePtr = (inode *) (((void *) allOfInputFile) + firstNodeOffsetInFile);
+        void *dataBlockPtr = (((void *) allOfInputFile) + dataBlockOffsetInFile);
 
         //print inodes
         printInodes(inodePtr, size, superblockPtr->inode_offset, superblockPtr->data_offset);
