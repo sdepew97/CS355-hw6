@@ -184,11 +184,14 @@ boolean defragment(char *inputFile) {
         }
 
         //TODO: close files once done! and remove error checking, here!
+
+        //TODO: remove testing code at end
+        rewind(outputPtr);
         fseek(outputPtr, SIZEOFBOOTBLOCK + SIZEOFSUPERBLOCK + superblockPtr->inode_offset, SEEK_SET);
         inode *newFileInodeStart = (inode *) outputPtr;
         fseek(outputPtr, SIZEOFBOOTBLOCK + SIZEOFSUPERBLOCK + superblockPtr->data_offset, SEEK_SET);
         void *newDataRegion = (void *) outputPtr;
-        outputFile((inode *) inodePtr + 3, (inode *) newFileInodeStart + 3, size, dataBlockPtr, newDataRegion, "old 3\n", "new 3\n");
+        outputFile((inode *) inodePtr + 3, (inode *) newFileInodeStart + 3, size, dataBlockPtr, newDataRegion, "old 3\0", "new 3\0");
 
         //print inodes and data blocks prior to reorganization..., output swap region, and make free list, again
         //TODO: build free list, here with currentDataBlock as the head of the list!
