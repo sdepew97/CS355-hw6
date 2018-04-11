@@ -257,9 +257,10 @@ void printInodes(inode *startInodeRegion, int blockSize, int inodeOffset, int da
 
 void printDataBlocks(void *startDataRegion, int blockSize, int dataOffset, int swapOffset) {
     int numBlocks = swapOffset - dataOffset;
-    block *currentBlock = startDataRegion;
+    void *currentBlock = startDataRegion;
 
     for(int i=0; i<numBlocks; i++) {
-        printf("Block Value: %d\n", currentBlock->next);
+        printf("Block Value: %d\n", ((block *) currentBlock)->next);
+        currentBlock = (currentBlock + blockSize);
     }
 }
