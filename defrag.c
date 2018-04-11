@@ -152,7 +152,7 @@ boolean defragment(char *inputFile) {
                     currentDataBlock = orderDBlocks(currentDataBlock, &currentInode, dataBlockPtr, size, outputPtr);
                 } else if (currentInode->size > DBLOCKS && currentInode->size <= IBLOCKS) {
                     currentDataBlock = orderDBlocks(currentDataBlock, &currentInode, dataBlockPtr, size, outputPtr);
-
+                    currentDataBlock = orderIBlocks(currentDataBlock, &currentInode, dataBlockPtr, size, outputPtr);
                 } //TODO: check if this works!
                 else if (currentInode->size > IBLOCKS && currentInode->size <= I2BLOCKS) {
 //                    currentDataBlock = orderDBlocks(currentDataBlock, &inodePtr, dataBlockOffsetInFile, size, filePtr, outputPtr);
@@ -213,6 +213,51 @@ long orderDBlocks(long nodeLocation, inode **inodePtr, void *dataPtr, int size, 
         fwrite(dataBlock, size, 1, outputFile);
         (*inodePtr)->dblocks[i] = nodeLocationValue;
         nodeLocationValue++;
+    }
+
+    return nodeLocationValue;
+}
+
+//TODO: check today in office hours this is correct!
+/*
+ * Method returns updated current node location with location of where to put next node! (-1 if failure)
+ */
+long orderIBlocks(long nodeLocation, inode **inodePtr, void *dataPtr, int size, FILE *outputFile) {
+    //put the DBlocks in order
+    float divisionResult = (float) (*inodePtr)->size / (float) size;
+    long numBlocks = ceilf(divisionResult); //number of blocks used, total (take ceiling)
+    long nodeLocationValue = nodeLocation;
+    numBlocks -= N_DBLOCKS; //remove 10, since already handled
+    long numIndirect = size / PTRSIZE;
+    void *currentIBlock;
+    void *currentBlock;
+    int blockToMove;
+
+    for (int i = 0; i < N_IBLOCKS; i++) {
+        if (numBlocks <= 0) {
+            break;
+        } else {
+            currentIBlock = (dataPtr + (*inodePtr)->iblocks[i] * size);
+            //move currentIBlock in output file
+            (*inodePtr)->iblocks[i] = nodeLocationValue;
+            fwrite(currentIBlock, size, 1, outputFile);
+            nodeLocationValue++;
+
+            for (int j = 0; j < numIndirect; j++) {
+                if (numBlocks <= 0) {
+                    break;
+                } else {
+                    blockToMove = *((int *) (currentIBlock + j * PTRSIZE));
+                    currentBlock = (dataPtr + blockToMove * size); //TODO: check today in office hours
+                    //reposition current block and update ptr in indirect block!
+                    fwrite(currentBlock, size, 1, outputFile);
+                    //TODO: check with Dianna today in office hours (ptr arithmetic)
+                    *((int *) (currentIBlock + j * PTRSIZE)) = nodeLocationValue;
+                    nodeLocationValue++;
+                    numBlocks--; //update the number of nodes to place, too
+                }
+            }
+        }
     }
 
     return nodeLocationValue;

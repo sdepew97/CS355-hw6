@@ -57,6 +57,7 @@ void printManPage();
 int parseCmd(int argc, char *argv[]);
 boolean defragment(char *inputFile);
 long orderDBlocks(long nodeLocation, inode **inodePtr, void *dataPtr, int size, FILE *outputFile);
+long orderIBlocks(long nodeLocation, inode **inodePtr, void *dataPtr, int size, FILE *outputFile);
 long offsetBytes(int blockSize, int offset);
 void *getBlock(FILE *inputFile, long offsetValue, long blockSize);
 void printInodes(inode *startInodeRegion, int blockSize, int inodeOffset, int dataOffset);
