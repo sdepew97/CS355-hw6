@@ -114,12 +114,12 @@ boolean defragment(char *inputFile) {
         //set some values based on superblock that will be useful
         int size = superblockPtr->size;
         //TODO: get offset of inode region and data region based on superblock values
-        int firstNodeOffsetInFile = offsetBytes(size, superblockPtr->inode_offset); //location of where FIRST inode starts in input file
-        int dataBlockOffsetInFile = offsetBytes(size, superblockPtr->data_offset); //start of data region in file
-        int swapBlockOffsetInFile = offsetBytes(size, superblockPtr->swap_offset);
+        long firstNodeOffsetInFile = offsetBytes(size, superblockPtr->inode_offset); //location of where FIRST inode starts in input file
+        long dataBlockOffsetInFile = offsetBytes(size, superblockPtr->data_offset); //start of data region in file
+        long swapBlockOffsetInFile = offsetBytes(size, superblockPtr->swap_offset);
         printf("Size: %d\n", size);
 
-        inode *inodePtr = (allOfInputFile + firstNodeOffsetInFile);
+        inode *inodePtr = (((void *) allOfInputFile) + firstNodeOffsetInFile);
         void *dataBlockPtr = (allOfInputFile + dataBlockOffsetInFile);
 
         //print inodes
@@ -242,7 +242,7 @@ void printInodes(inode *startInodeRegion, int blockSize, int inodeOffset, int da
     inode *currentInode = startInodeRegion;
 
     for(int i=0; i<numInodes; i++){
-        currentInode = (currentInode + (i* sizeof(inode)));
+        currentInode = (((void *) currentInode) + (i* sizeof(inode)));
         printf("inode %d, next inode %d, nlink %d, size %d\n", i, currentInode->next_inode, currentInode->nlink, currentInode->size);
         printf("dblocks:\n");
 //        for(int j=0; i<N_DBLOCKS; j++) {
