@@ -105,7 +105,7 @@ boolean defragment(char *inputFile) {
         fread(allOfInputFile, inputFileSize, 1, filePtr); //TODO: recognize here if read was over maximum allowed size!
 
         //transfer over boot block, first
-        void *bootBlockPtr = allOfInputFile;
+        char *bootBlockPtr = allOfInputFile;
         fwrite(bootBlockPtr, SIZEOFBOOTBLOCK, 1, outputPtr);
 
         //read in and store the superblock, inode region pointer, and data region pointers
