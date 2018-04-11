@@ -81,13 +81,15 @@ boolean defragment(char *inputFile) {
     char *writingFlag = "wb+\0";
     char *defragExtension = "-defrag\0";
     char *inputFileName = strdup(inputFile); //TODO: free at the end!!!
-    char *outputFileName = malloc(strlen(inputFile) + strlen(defragExtension) + 1);
-    strcpy(outputFileName, inputFile);
-    strcat(outputFileName, defragExtension);
+    char *outputFileName = "MiddleFile\0";
+    char *outputFinalFileName = malloc(strlen(inputFile) + strlen(defragExtension) + 1);
+    strcpy(outputFinalFileName, inputFile);
+    strcat(outputFinalFileName, defragExtension);
 
     //File opening
     FILE *filePtr = fopen(inputFileName, readingFlag);
     FILE *outputPtr = fopen(outputFileName, writingFlag);
+    FILE *finalOutputPtr = fopen(outputFinalFileName, writingFlag);
 
     if (filePtr != NULL && outputPtr != NULL) {
         //filePtr and outputPtr are valid file pointers
@@ -183,6 +185,20 @@ boolean defragment(char *inputFile) {
             currentInode = ((void *) currentInode) + sizeof(inode);
         }
 
+        fclose(outputPtr);
+
+        //Write new inode region! and write the entire file!
+        outputPtr = fopen(outputFileName, readingFlag);
+        void *newDataRegion = malloc((superblockPtr->swap_offset - superblockPtr->data_offset) * size);
+        fseek(outputPtr, SIZEOFBOOTBLOCK + SIZEOFSUPERBLOCK + superblockPtr->data_offset, SEEK_SET);
+        fread(newDataRegion, ((superblockPtr->swap_offset - superblockPtr->data_offset) * size), 1, outputPtr);
+
+        fwrite(bootBlockPtr, SIZEOFBOOTBLOCK, 1, finalOutputPtr);
+        fwrite(superblockPtr, SIZEOFSUPERBLOCK, 1, finalOutputPtr);
+        fwrite((((void *) superblockPtr) + SIZEOFSUPERBLOCK), superblockPtr->data_offset * size, 1,
+               finalOutputPtr); //TODO: check this is the region I want to be writing...??
+        fwrite(newDataRegion, ((superblockPtr->swap_offset - superblockPtr->data_offset) * size), 1, finalOutputPtr);
+
         //TODO: close files once done! and remove error checking, here!
         fclose(filePtr);
         fclose(outputPtr);
@@ -232,12 +248,6 @@ boolean defragment(char *inputFile) {
 //        printDataBlocks(dataBlockPtr, size, superblockPtr->data_offset, superblockPtr->swap_offset);
 
 
-        //TODO: rewrite inode and super block regions to file now that they're modified correctly! (the image being held in memory is correct for superblock-inode region)
-//        //write the superblock to the output file
-//        fwrite(superblockPtr, SIZEOFBOOTBLOCK, 1, outputPtr);
-//        //TODO: free all pointers as needed!!
-//        free(superblockPtr); //TODO: put where best!!
-//
         return TRUE; //TODO: remove once not debugging...
     } else {
         return FALSE;
