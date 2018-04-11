@@ -47,6 +47,11 @@ typedef struct inode {
     int i3block;
 } inode;
 
+typedef struct block {
+    int next;
+    //TODO: figure out how to add padding??
+} block;
+
 void printDirections();
 void printManPage();
 int parseCmd(int argc, char *argv[]);
@@ -55,5 +60,6 @@ long orderDBlocks(long currentNodeLocation, inode **inodePtr, long dataOffsetLoc
 long offsetBytes(int blockSize, int offset);
 void *getBlock(FILE *inputFile, long offsetValue, long blockSize);
 void printInodes(inode *startInodeRegion, int blockSize, int inodeOffset, int dataOffset);
+void printDataBlocks(void *startDataRegion, int blockSize, int dataOffset, int swapOffset);
 
 #endif //HW6_MAIN_H

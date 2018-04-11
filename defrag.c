@@ -124,7 +124,7 @@ boolean defragment(char *inputFile) {
 
         //print inodes
         printInodes(inodePtr, size, superblockPtr->inode_offset, superblockPtr->data_offset);
-
+        printDataBlocks(dataBlockPtr, size, superblockPtr->data_offset, superblockPtr->swap_offset);
 
 //
 //        //get file pointer for input to point to first inode, now by asking for offset from start
@@ -252,5 +252,14 @@ void printInodes(inode *startInodeRegion, int blockSize, int inodeOffset, int da
         printf("i2block %d\n", currentInode->i2block);
         printf("i3block %d\n", currentInode->i3block);
         currentInode = (((void *) currentInode) + sizeof(inode));
+    }
+}
+
+void printDataBlocks(void *startDataRegion, int blockSize, int dataOffset, int swapOffset) {
+    int numBlocks = swapOffset - dataOffset;
+    block *currentBlock = startDataRegion;
+
+    for(int i=0; i<numBlocks; i++) {
+        printf("Block Value: %d\n", currentBlock->next);
     }
 }
