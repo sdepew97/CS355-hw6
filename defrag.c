@@ -178,6 +178,8 @@ boolean defragment(char *inputFile) {
             currentInode = ((void *) currentInode) + sizeof(inode);
         }
 
+        fclose(outputPtr);
+        outputPtr = fopen(outputFileName, readingFlag);
         //TODO: clean this up! (A LOT!!!)
         char *outputMiddleFileName = "Middle\0"; //TODO: free at the end!!!
         void *blockToOutput;
@@ -200,8 +202,8 @@ boolean defragment(char *inputFile) {
             blockToOutput = allOfMiddleFile + SIZEOFBOOTBLOCK + SIZEOFSUPERBLOCK + ((superblockPtr->data_offset - superblockPtr->inode_offset) * size) + 623 * size;
             fwrite(blockToOutput, size, 1, middleOutput);
 
-        fclose(outputPtr);
 
+        fclose(outputPtr);
         //Write new inode region! and write the entire file!
         outputPtr = fopen(outputFileName, readingFlag);
         void *newDataRegion = malloc((superblockPtr->swap_offset - superblockPtr->data_offset) * size); //TODO: catch memory leaks!
