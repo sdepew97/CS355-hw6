@@ -403,6 +403,9 @@ void outputFile(inode *fileToOutputOriginal, inode *fileToOutputNew, int size, v
         blockToOutput = dataRegionNew + ((fileToOutputNew->dblocks[i]) * size);
         fwrite(blockToOutput, size, 1, newOutput);
     }
+
+    free(outputOldFileName);
+    free(outputNewFileName);
 }
 
 /*
