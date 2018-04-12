@@ -195,9 +195,9 @@ boolean defragment(char *inputFile) {
         superblockPtr->free_inode = currentDataBlock;
         for(int i=currentDataBlock; i<swapBlockOffsetInFile; i++) {
             valueToTransfer = i + 1;
-            ((block *) (allOfDataRegion + ((dataBlockOffsetInFile + i) *size)))->next = valueToTransfer;
+            ((block *) (allOfDataRegion + ((superblockPtr->data_offset + i) *size)))->next = valueToTransfer;
         }
-        ((block *) (allOfDataRegion + ((dataBlockOffsetInFile + swapBlockOffsetInFile -1) *size)))->next = -1; //set value for last block
+        ((block *) (allOfDataRegion + ((superblockPtr->data_offset + swapBlockOffsetInFile -1) *size)))->next = -1; //set value for last block
 
         //Write new inode region! and write the entire file!
         fwrite(bootBlockPtr, SIZEOFBOOTBLOCK, 1, finalOutputPtr);
