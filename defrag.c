@@ -437,10 +437,10 @@ void outputDFile(inode *fileToOutputOriginal, inode *fileToOutputNew, int size, 
 
     printDBlocks(numBlocks, fileToOutputNew->dblocks, dataRegionNew, size, newOutput);
 
-    free(outputOldFileName);
-    free(outputNewFileName);
-    fclose(oldOutput);
-    fclose(newOutput);
+//    free(outputOldFileName);
+//    free(outputNewFileName);
+//    fclose(oldOutput);
+//    fclose(newOutput);
 }
 
 void outputIFile(inode *fileToOutputOriginal, inode *fileToOutputNew, int size, void *dataRegionOld, void *dataRegionNew, char *oldOutputName, char *newOutputName) {
@@ -475,10 +475,10 @@ void outputIFile(inode *fileToOutputOriginal, inode *fileToOutputNew, int size, 
     numIndirect = ceilf(divisionResult);
     printIBlocks(numIndirect, numBlocks, fileToOutputNew->iblocks, dataRegionNew, size, newOutput);
 
-    free(outputOldFileName);
-    free(outputNewFileName);
-    fclose(oldOutput);
-    fclose(newOutput);
+//    free(outputOldFileName);
+//    free(outputNewFileName);
+//    fclose(oldOutput);
+//    fclose(newOutput);
 }
 
 
