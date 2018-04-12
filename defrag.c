@@ -199,7 +199,7 @@ boolean defragment(char *inputFile) {
             return FALSE;
         }
 
-        fread(allOfMiddleFile, middleFileSize, 1, middleOutput); //TODO: recognize here if read was over maximum allowed size!
+        fread(allOfMiddleFile, middleFileSize, 1, outputPtr); //TODO: recognize here if read was over maximum allowed size!
 
         blockToOutput = allOfMiddleFile + SIZEOFBOOTBLOCK + SIZEOFSUPERBLOCK + ((superblockPtr->data_offset - superblockPtr->inode_offset) * size) + 623 * size;
         fwrite(blockToOutput, size, 1, middleOutput);
