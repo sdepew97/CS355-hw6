@@ -245,9 +245,9 @@ boolean defragment(char *inputFile) {
         printf("Final Print\n");
         printf("head of inode list %d\n", superblockPtr->free_inode);
         printf("value of currentDataBlock %d\n", currentDataBlock);
-//        printInodes(inodePtr, size, superblockPtr->inode_offset, superblockPtr->data_offset);
+        printInodes(inodePtr, size, superblockPtr->inode_offset, superblockPtr->data_offset);
         printf("head of free list %d\n", superblockPtr->free_block);
-//        printDataBlocks(dataBlockPtr, size, superblockPtr->data_offset, superblockPtr->swap_offset);
+        printDataBlocks(dataBlockPtr, size, superblockPtr->data_offset, superblockPtr->swap_offset);
 //TODO: not going to work until blocks are output to file correctly!!!
 
         //TODO: remove at the end
