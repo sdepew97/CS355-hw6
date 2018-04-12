@@ -202,6 +202,7 @@ boolean defragment(char *inputFile) {
         fwrite((((void *) superblockPtr) + SIZEOFSUPERBLOCK), superblockPtr->data_offset * size, 1,
                finalOutputPtr);
         fwrite(allOfDataRegion, outputFileSize, 1, finalOutputPtr);
+        //TODO: add swap region and add free blocks, here
 
         //TODO: close files once done! and remove error checking, here!
         fclose(filePtr);
@@ -234,7 +235,7 @@ boolean defragment(char *inputFile) {
         printf("head of inode list %d\n", superblockPtr->free_inode);
         printInodes(inodePtr, size, superblockPtr->inode_offset, superblockPtr->data_offset);
         printf("head of free list %d\n", superblockPtr->free_block);
-//        printDataBlocks(newDataRegion, size, superblockPtr->data_offset, superblockPtr->swap_offset);
+        printDataBlocks(newDataRegion, size, superblockPtr->data_offset, superblockPtr->swap_offset);
 
 
         return TRUE; //TODO: remove once not debugging...
