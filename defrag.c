@@ -238,6 +238,41 @@ boolean defragment(char *inputFile) {
         printf("head of free list %d\n", superblockPtr->free_block);
         printDataBlocks(dataBlockPtr, size, superblockPtr->data_offset, superblockPtr->swap_offset);
 
+        //TODO: remove at the end
+        //open and read both files into memory for debugging purposes...
+        filePtr = fopen(inputFileName, readingFlag);
+        outputPtr = fopen(outputFinalFileName, readingFlag);
+
+        //File reading into memory
+        fseek(filePtr, 0L, SEEK_END);
+        long oldFileSize = ftell(filePtr);
+        rewind(filePtr);
+        printf("Number bytes in old file: %ld\n", oldFileSize);
+        void *allOfOldFile = malloc(oldFileSize); //TODO: free this at the end!
+        if (allOfOldFile == NULL) {
+            //malloc failed
+            perror("Malloc failed.\n");
+            return FALSE;
+        }
+        fread(allOfOldFile, oldFileSize, 1, filePtr); //TODO: recognize here if read was over maximum allowed size!
+
+        fseek(outputPtr, 0L, SEEK_END);
+        long newFileSize = ftell(outputPtr);
+        rewind(outputPtr);
+        printf("Number bytes in new file: %ld\n", newFileSize);
+        void *allOfNewFile = malloc(newFileSize); //TODO: free this at the end!
+        if (allOfNewFile == NULL) {
+            //malloc failed
+            perror("Malloc failed.\n");
+            return FALSE;
+        }
+        fread(allOfNewFile, newFileSize, 1, outputPtr); //TODO: recognize here if read was over maximum allowed size!
+
+//        inode *oldInodePtr = allOfOldFile + SIZEOFSUPERBLOCK + SIZEOFBOOTBLOCK + superblockPtr->inode_offset + 3 * sizeof(inode);
+//        inode *newInodePtr = allOfNewFile + SIZEOFSUPERBLOCK + SIZEOFBOOTBLOCK + superblockPtr->inode_offset + 3 * sizeof(inode);
+//        newDataRegion = allOfNewFile + offsetBytes(size, superblockPtr->data_offset);
+//
+//        outputFile(oldInodePtr, newInodePtr, size, dataBlockPtr, newDataRegion, "old 3\0", "new 3\0");
 
         return TRUE; //TODO: remove once not debugging...
     } else {
