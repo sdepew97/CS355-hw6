@@ -270,7 +270,7 @@ boolean defragment(char *inputFile) {
         void *dataBlockNew = allOfNewFile + SIZEOFSUPERBLOCK + SIZEOFBOOTBLOCK + superblockPtr->data_offset * size;
 
         //TODO: also see if works with pointer from new data file
-        outputFile(oldInodePtr, newInodePtr, size, dataBlockOld, dataBlockNew, "old 3\0", "new 3\0");
+//        outputFile(oldInodePtr, newInodePtr, size, dataBlockOld, dataBlockNew, "old 3\0", "new 3\0");
 
         //TODO: finish freeing memory
         free(allOfInputFile);
