@@ -228,6 +228,7 @@ boolean defragment(char *inputFile) {
         //read in and store the superblock, inode region pointer, and data region pointers
         superblockPtr = (((void *) allOfInputFile) + SIZEOFBOOTBLOCK);
         inodePtr = (((void *) allOfInputFile) + firstNodeOffsetInFile);
+        dataBlockPtr = (((void *) allOfInputFile) + dataBlockOffsetInFile);
 
         //print inodes and data blocks prior to reorganization..., output swap region, and make free list, again
         //TODO: build free list, here with currentDataBlock as the head of the list!
@@ -235,7 +236,7 @@ boolean defragment(char *inputFile) {
         printf("head of inode list %d\n", superblockPtr->free_inode);
         printInodes(inodePtr, size, superblockPtr->inode_offset, superblockPtr->data_offset);
         printf("head of free list %d\n", superblockPtr->free_block);
-        printDataBlocks(newDataRegion, size, superblockPtr->data_offset, superblockPtr->swap_offset);
+        printDataBlocks(dataBlockPtr, size, superblockPtr->data_offset, superblockPtr->swap_offset);
 
 
         return TRUE; //TODO: remove once not debugging...
