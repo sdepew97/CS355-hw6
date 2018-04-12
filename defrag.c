@@ -236,6 +236,7 @@ boolean defragment(char *inputFile) {
 
         //TODO: remove at the end
         //open and read both files into memory for debugging purposes...
+        fclose(filePtr);
         filePtr = fopen(inputFileName, readingFlag);
         outputPtr = fopen(outputFinalFileName, readingFlag);
 
