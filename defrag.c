@@ -279,6 +279,9 @@ boolean defragment(char *inputFile) {
         free(inputFileName);
         free(outputFinalFileName);
 
+        fclose(filePtr);
+        fclose(outputPtr);
+
         return TRUE; //TODO: remove once not debugging...
     } else {
         return FALSE;
