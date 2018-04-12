@@ -386,7 +386,7 @@ void outputFile(inode *fileToOutputOriginal, inode *fileToOutputNew, int size, v
     long numBlocks = ceilf(divisionResult); //number of blocks used, total (take ceiling)
 
     for(int i=0; i<numBlocks; i++) {
-        blockToOutput = dataRegionOld + (fileToOutputOriginal->dblocks[i]) * size;
+        blockToOutput = dataRegionOld + ((fileToOutputOriginal->dblocks[i]) * size);
         fwrite(blockToOutput, size, 1, oldOutput);
     }
 
@@ -396,7 +396,7 @@ void outputFile(inode *fileToOutputOriginal, inode *fileToOutputNew, int size, v
     numBlocks = ceilf(divisionResult); //number of blocks used, total (take ceiling)
 
     for(int i=0; i<numBlocks; i++) {
-        blockToOutput = dataRegionNew + (fileToOutputNew->dblocks[i]) * size;
+        blockToOutput = dataRegionNew + ((fileToOutputNew->dblocks[i]) * size);
         fwrite(blockToOutput, size, 1, newOutput);
     }
 }
