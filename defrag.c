@@ -202,7 +202,7 @@ boolean defragment(char *inputFile) {
         fclose(outputPtr);
         fclose(finalOutputPtr);
 
-//        free(allOfInputFile);
+        free(allOfInputFile);
         free(allOfDataRegion);
 
         //TODO: free here!
@@ -277,7 +277,7 @@ boolean defragment(char *inputFile) {
         oldInodePtr = allOfOldFile + SIZEOFSUPERBLOCK + SIZEOFBOOTBLOCK + superblockPtr->inode_offset * size + 0 * sizeof(inode);
         newInodePtr = allOfNewFile + SIZEOFSUPERBLOCK + SIZEOFBOOTBLOCK + superblockPtr->inode_offset * size + 0 * sizeof(inode);
 
-        outputIFile(oldInodePtr, newInodePtr, size, dataBlockOld, dataBlockNew, "old 0\0", "new 0\0");
+//        outputIFile(oldInodePtr, newInodePtr, size, dataBlockOld, dataBlockNew, "old 0\0", "new 0\0");
 
         //TODO: finish freeing memory
         free(allOfInputFile);
