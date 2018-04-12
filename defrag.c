@@ -121,9 +121,9 @@ boolean defragment(char *inputFile) {
         //print inodes and data blocks prior to reorganization...
         //TODO: remove debugging information at end!
         printf("head of inode list %d\n", superblockPtr->free_inode);
-        printInodes(inodePtr, size, superblockPtr->inode_offset, superblockPtr->data_offset);
+//        printInodes(inodePtr, size, superblockPtr->inode_offset, superblockPtr->data_offset);
         printf("head of free list %d\n", superblockPtr->free_block);
-        printDataBlocks(dataBlockPtr, size, superblockPtr->data_offset, superblockPtr->swap_offset);
+//        printDataBlocks(dataBlockPtr, size, superblockPtr->data_offset, superblockPtr->swap_offset);
 
         long currentDataBlock = 0; //start the counter that keeps track of the data blocks that are being reorganized...
         inode *currentInode = inodePtr;
@@ -230,7 +230,7 @@ boolean defragment(char *inputFile) {
         //TODO: build free list, here with currentDataBlock as the head of the list!
         printf("Final Print\n");
         printf("head of inode list %d\n", superblockPtr->free_inode);
-        printInodes(inodePtr, size, superblockPtr->inode_offset, superblockPtr->data_offset);
+//        printInodes(inodePtr, size, superblockPtr->inode_offset, superblockPtr->data_offset);
         printf("head of free list %d\n", superblockPtr->free_block);
 //        printDataBlocks(dataBlockPtr, size, superblockPtr->data_offset, superblockPtr->swap_offset);
 //TODO: not going to work until blocks are output to file correctly!!!
