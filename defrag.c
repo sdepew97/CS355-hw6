@@ -183,7 +183,7 @@ boolean defragment(char *inputFile) {
         void *blockToOutput;
 
         //File opening
-        FILE *middleOutput = fopen(outputMiddleFileName, readingFlag);
+        FILE *middleOutput = fopen(outputMiddleFileName, writingFlag);
         //File reading into memory
         fseek(middleOutput, 0L, SEEK_END);
         long middleFileSize = ftell(middleOutput);
@@ -369,14 +369,14 @@ void printDataBlocks(void *startDataRegion, int blockSize, int dataOffset, int s
  * Error checking method //TODO: write to allow for indirect files!
  */
 void outputFile(inode *fileToOutputOriginal, inode *fileToOutputNew, int size, void *dataRegionOld, void *dataRegionNew, char *oldOutputName, char *newOutputName) {
-    char *readingFlag = "rb+\0";
+    char *writingFlag = "wb+\0";
     char *outputOldFileName = strdup(oldOutputName); //TODO: free at the end!!!
     char *outputNewFileName = strdup(newOutputName); //TODO: free at the end!!!
     void *blockToOutput;
 
     //File opening
-    FILE *oldOutput = fopen(outputOldFileName, readingFlag);
-    FILE *newOutput = fopen(outputNewFileName, readingFlag);
+    FILE *oldOutput = fopen(outputOldFileName, writingFlag);
+    FILE *newOutput = fopen(outputNewFileName, writingFlag);
 
     //read and output old file's data blocks
     float divisionResult = (float) fileToOutputOriginal->size / (float) size;
