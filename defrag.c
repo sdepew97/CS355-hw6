@@ -376,6 +376,15 @@ void printDataBlocks(void *startDataRegion, int blockSize, int dataOffset, int s
     }
 }
 
+//Error checking methods
+void printDBlocks(int numToWrite, int *offsets, void *dataPtr, int size, FILE *outputFile) {
+    for (int i = 0; i < numToWrite; i++) {
+        void *dataBlock = (dataPtr + offsets[i] * size); //TODO: check computation
+        //dataBlock is now pointing to the data block to move (put in current node location and set array value accordingly)
+        fwrite(dataBlock, size, 1, outputFile);
+    }
+}
+
 /*
  * Error checking method //TODO: write to allow for indirect files!
  */
@@ -383,7 +392,6 @@ void outputFile(inode *fileToOutputOriginal, inode *fileToOutputNew, int size, v
     char *writingFlag = "wb+\0";
     char *outputOldFileName = strdup(oldOutputName); //TODO: free at the end!!!
     char *outputNewFileName = strdup(newOutputName); //TODO: free at the end!!!
-    void *blockToOutput;
 
     //File opening
     FILE *oldOutput = fopen(outputOldFileName, writingFlag);
@@ -392,21 +400,14 @@ void outputFile(inode *fileToOutputOriginal, inode *fileToOutputNew, int size, v
     //read and output old file's data blocks
     float divisionResult = (float) fileToOutputOriginal->size / (float) size;
     long numBlocks = ceilf(divisionResult); //number of blocks used, total (take ceiling)
-
-    for (int i = 0; i < numBlocks; i++) {
-        blockToOutput = dataRegionOld + ((fileToOutputOriginal->dblocks[i]) * size);
-        fwrite(blockToOutput, size, 1, oldOutput);
-    }
+    printDBlocks(numBlocks, fileToOutputOriginal->dblocks, dataRegionOld, size, oldOutput);
 
     //read and output new file's data blocks
 
     divisionResult = (float) fileToOutputNew->size / (float) size;
     numBlocks = ceilf(divisionResult); //number of blocks used, total (take ceiling)
 
-    for (int i = 0; i < numBlocks; i++) {
-        blockToOutput = dataRegionNew + ((fileToOutputNew->dblocks[i]) * size);
-        fwrite(blockToOutput, size, 1, newOutput);
-    }
+    printDBlocks(numBlocks, fileToOutputNew->dblocks, dataRegionNew, size, newOutput);
 
     free(outputOldFileName);
     free(outputNewFileName);
