@@ -180,7 +180,7 @@ boolean defragment(char *inputFile) {
 
 
 
-//        fclose(outputPtr);
+        fclose(outputPtr);
         outputPtr = fopen(outputFileName, readingFlag);
         //TODO: clean this up! (A LOT!!!)
         char *outputMiddleFileName = "Middle\0"; //TODO: free at the end!!!
