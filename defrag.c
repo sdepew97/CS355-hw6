@@ -13,7 +13,6 @@
  */
 int main(int argc, char *argv[]) {
     if (argc == 2) {
-        //TODO: parse command here to ensure the input is valid (maybe the file will not be able to open?)
         int returnVal = parseCmd(argc, argv);
 
         if (returnVal == error) {
@@ -21,15 +20,12 @@ int main(int argc, char *argv[]) {
         } else if (returnVal == help) {
             printManPage();
         } else {
-            //TODO: implement de-fragmenting the file....
-            printf("secondArgument: %s\n", argv[1]);
-            //TODO: check if defrag succeeded
+            //TODO: check if de-fragmentation succeeded!
             defragment(argv[1]);
         }
     } else {
         //if there are fewer than or more than two arguments to the command line, an error message with how to run the program should print
         printDirections();
-        printf("size of int %ld\n", sizeof(int));
     }
 
     return 0;
@@ -57,7 +53,7 @@ void printManPage() {
 }
 
 /*
- * Method to parse the input command from the user
+ * Method to parse the input command from the user //TODO: add error checking, here
  */
 int parseCmd(int argc, char *argv[]) {
     //input flags
@@ -80,7 +76,7 @@ boolean defragment(char *inputFile) {
     char *readingFlag = "rb+\0";
     char *writingFlag = "wb+\0";
     char *defragExtension = "-defrag\0";
-    char *inputFileName = strdup(inputFile); //TODO: free at the end!!!
+    char *inputFileName = strdup(inputFile); //TODO: free memory at the end!!!
     char *outputFileName = "MiddleFile\0";
     char *outputFinalFileName = malloc(strlen(inputFile) + strlen(defragExtension) + 1);
     strcpy(outputFinalFileName, inputFile);
@@ -91,10 +87,8 @@ boolean defragment(char *inputFile) {
     FILE *outputPtr = fopen(outputFileName, writingFlag);
     FILE *finalOutputPtr = fopen(outputFinalFileName, writingFlag);
 
-    if (filePtr != NULL && outputPtr != NULL) {
-        //filePtr and outputPtr are valid file pointers
-
-        //File reading into memory
+    if (filePtr != NULL && outputPtr != NULL && finalOutputPtr != NULL) {
+        //Read original disk image into memory //TODO: add a max here
         fseek(filePtr, 0L, SEEK_END);
         long inputFileSize = ftell(filePtr);
         rewind(filePtr);
@@ -108,46 +102,45 @@ boolean defragment(char *inputFile) {
 
         fread(allOfInputFile, inputFileSize, 1, filePtr); //TODO: recognize here if read was over maximum allowed size!
 
-        //transfer over boot block, first
+        //transfer over boot block, first to middle file
         char *bootBlockPtr = allOfInputFile;
-        fwrite(bootBlockPtr, SIZEOFBOOTBLOCK, 1, outputPtr);
 
         //read in and store the superblock, inode region pointer, and data region pointers
-        superblock *superblockPtr = (superblock *) (((void *) allOfInputFile) + SIZEOFBOOTBLOCK);
+        superblock *superblockPtr = (((void *) allOfInputFile) + SIZEOFBOOTBLOCK);
 
         //set some values based on superblock that will be useful
         int size = superblockPtr->size;
-        //TODO: get offset of inode region and data region based on superblock values
         long firstNodeOffsetInFile = offsetBytes(size,
                                                  superblockPtr->inode_offset); //location of where FIRST inode starts in input file
         long dataBlockOffsetInFile = offsetBytes(size, superblockPtr->data_offset); //start of data region in file
         long swapBlockOffsetInFile = offsetBytes(size, superblockPtr->swap_offset);
-        printf("Size: %d\n", size);
+//        printf("Size: %d\n", size);
 
-        inode *inodePtr = (inode *) (((void *) allOfInputFile) + firstNodeOffsetInFile);
+        inode *inodePtr = (((void *) allOfInputFile) + firstNodeOffsetInFile);
         void *dataBlockPtr = (((void *) allOfInputFile) + dataBlockOffsetInFile);
 
         //print inodes and data blocks prior to reorganization...
+        //TODO: remove debugging information at end!
         printf("head of inode list %d\n", superblockPtr->free_inode);
         printInodes(inodePtr, size, superblockPtr->inode_offset, superblockPtr->data_offset);
         printf("head of free list %d\n", superblockPtr->free_block);
         printDataBlocks(dataBlockPtr, size, superblockPtr->data_offset, superblockPtr->swap_offset);
 
-        //write original superblock and inodes to output file, so that reorganization can occur of data blocks
+        //write original bootblock, superblock and inodes to output file, so that reorganization can occur of data blocks
+        fwrite(bootBlockPtr, SIZEOFBOOTBLOCK, 1, outputPtr);
         fwrite(superblockPtr, SIZEOFSUPERBLOCK, 1, outputPtr);
         fwrite((((void *) superblockPtr) + SIZEOFSUPERBLOCK), superblockPtr->data_offset * size, 1,
-               outputPtr); //TODO: check this is the region I want to be writing...??
+               outputPtr);
 
         long currentDataBlock = 0; //start the counter that keeps track of the data blocks that are being reorganized...
         inode *currentInode = inodePtr;
 
-        //read all the inodes and reorganize the data blocks
+        //read all the inodes and reorganize their data blocks individually!
         for (int i = 0; i < NUMINODES; i++) {
             //check if inode is free or not...if not free, then do data management and organization (otherwise, just output to output file...)
             if (currentInode->nlink == UNUSED) {
                 //simply leave inode as is without any worries, since it will get re-copied at end
             } else {
-                //TODO: flesh out with proper writing of data blocks to output file and adjusting the super blocks values!
                 //check how much nesting is used, here
                 if (currentInode->size <= DBLOCKS) {
                     float divisionResult = (float) currentInode->size / (float) size;
@@ -184,6 +177,28 @@ boolean defragment(char *inputFile) {
             //update currentInode's value
             currentInode = ((void *) currentInode) + sizeof(inode);
         }
+
+        //TODO: clean this up! (A LOT!!!)
+        char *outputMiddleFileName = "Middle\0"; //TODO: free at the end!!!
+        void *blockToOutput;
+
+        //File opening
+        FILE *middleOutput = fopen(outputMiddleFileName, readingFlag);
+        //File reading into memory
+        fseek(middleOutput, 0L, SEEK_END);
+        long middleFileSize = ftell(middleOutput);
+        rewind(middleOutput);
+        printf("Number bytes in file: %ld\n", middleFileSize);
+        void *allOfMiddleFile = malloc(middleFileSize); //TODO: free this at the end!
+        if (allOfMiddleFile == NULL) {
+            //malloc failed
+            perror("Malloc failed.\n");
+            return FALSE;
+        }
+        fread(allOfMiddleFile, middleFileSize, 1, middleOutput); //TODO: recognize here if read was over maximum allowed size!
+
+            blockToOutput = allOfMiddleFile + SIZEOFBOOTBLOCK + SIZEOFSUPERBLOCK + ((superblockPtr->data_offset - superblockPtr->inode_offset) * size) + 623 * size;
+            fwrite(blockToOutput, size, 1, middleOutput);
 
         fclose(outputPtr);
 
@@ -354,14 +369,14 @@ void printDataBlocks(void *startDataRegion, int blockSize, int dataOffset, int s
  * Error checking method //TODO: write to allow for indirect files!
  */
 void outputFile(inode *fileToOutputOriginal, inode *fileToOutputNew, int size, void *dataRegionOld, void *dataRegionNew, char *oldOutputName, char *newOutputName) {
-    char *writingFlag = "wb+\0";
+    char *readingFlag = "rb+\0";
     char *outputOldFileName = strdup(oldOutputName); //TODO: free at the end!!!
     char *outputNewFileName = strdup(newOutputName); //TODO: free at the end!!!
     void *blockToOutput;
 
     //File opening
-    FILE *oldOutput = fopen(outputOldFileName, writingFlag);
-    FILE *newOutput = fopen(outputNewFileName, writingFlag);
+    FILE *oldOutput = fopen(outputOldFileName, readingFlag);
+    FILE *newOutput = fopen(outputNewFileName, readingFlag);
 
     //read and output old file's data blocks
     float divisionResult = (float) fileToOutputOriginal->size / (float) size;
@@ -378,7 +393,7 @@ void outputFile(inode *fileToOutputOriginal, inode *fileToOutputNew, int size, v
     numBlocks = ceilf(divisionResult); //number of blocks used, total (take ceiling)
 
     for(int i=0; i<numBlocks; i++) {
-        blockToOutput = dataRegionNew + fileToOutputNew->dblocks[i] * size;
+        blockToOutput = dataRegionNew + (fileToOutputNew->dblocks[i]+1) * size;
         fwrite(blockToOutput, size, 1, newOutput);
     }
 }
