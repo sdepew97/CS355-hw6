@@ -77,7 +77,7 @@ boolean defragment(char *inputFile) {
     char *writingFlag = "wb+\0";
     char *defragExtension = "-defrag\0";
     char *inputFileName = strdup(inputFile); //TODO: free memory at the end!!!
-    char *outputFileName = "MiddleFile\0";
+    char *outputFileName = "NewDataBlocks\0";
     char *outputFinalFileName = malloc(strlen(inputFile) + strlen(defragExtension) + 1);
     strcpy(outputFinalFileName, inputFile);
     strcat(outputFinalFileName, defragExtension);
@@ -126,11 +126,11 @@ boolean defragment(char *inputFile) {
         printf("head of free list %d\n", superblockPtr->free_block);
         printDataBlocks(dataBlockPtr, size, superblockPtr->data_offset, superblockPtr->swap_offset);
 
-        //write original bootblock, superblock and inodes to output file, so that reorganization can occur of data blocks
-        fwrite(bootBlockPtr, SIZEOFBOOTBLOCK, 1, outputPtr);
-        fwrite(superblockPtr, SIZEOFSUPERBLOCK, 1, outputPtr);
-        fwrite((((void *) superblockPtr) + SIZEOFSUPERBLOCK), superblockPtr->data_offset * size, 1,
-               outputPtr);
+//        //write original bootblock, superblock and inodes to output file, so that reorganization can occur of data blocks
+//        fwrite(bootBlockPtr, SIZEOFBOOTBLOCK, 1, outputPtr);
+//        fwrite(superblockPtr, SIZEOFSUPERBLOCK, 1, outputPtr);
+//        fwrite((((void *) superblockPtr) + SIZEOFSUPERBLOCK), superblockPtr->data_offset * size, 1,
+//               outputPtr);
 
         long currentDataBlock = 0; //start the counter that keeps track of the data blocks that are being reorganized...
         inode *currentInode = inodePtr;
@@ -178,90 +178,61 @@ boolean defragment(char *inputFile) {
             currentInode = ((void *) currentInode) + sizeof(inode);
         }
 
+        //TODO: tie together free inodes list!!!!
+
         fclose(outputPtr);
 
         outputPtr = fopen(outputFileName, readingFlag);
-        //TODO: clean this up! (A LOT!!!)
-        char *outputMiddleFileName = "Middle\0"; //TODO: free at the end!!!
-        void *blockToOutput;
-
-        //File opening
-        FILE *middleOutput = fopen(outputMiddleFileName, writingFlag);
-        //File reading into memory
+        //read all the new data blocks into memory
         fseek(outputPtr, 0L, SEEK_END);
-        long middleFileSize = ftell(outputPtr);
+        long outputFileSize = ftell(outputPtr);
         rewind(outputPtr);
-        printf("Number bytes in file output: %ld\n", middleFileSize);
-        void *allOfMiddleFile = malloc(middleFileSize); //TODO: free this at the end!
-        if (allOfMiddleFile == NULL) {
+        printf("Number bytes in output (middle) file: %ld\n", outputFileSize);
+        void *allOfDataRegion = malloc(outputFileSize); //TODO: free this at the end!
+        if (allOfDataRegion == NULL) {
             //malloc failed
             perror("Malloc failed.\n");
             return FALSE;
         }
+        fread(allOfDataRegion, outputFileSize, 1, outputPtr); //TODO: recognize here if read was over maximum allowed size! (have second read, but if it works, then make a note)
 
-        fread(allOfMiddleFile, middleFileSize, 1, outputPtr); //TODO: recognize here if read was over maximum allowed size!
-
-        blockToOutput = allOfMiddleFile + SIZEOFBOOTBLOCK + SIZEOFSUPERBLOCK + ((superblockPtr->data_offset - superblockPtr->inode_offset) * size) + 623 * size;
-        fwrite(blockToOutput, size, 1, middleOutput);
-
-        fclose(outputPtr);
         //Write new inode region! and write the entire file!
-        outputPtr = fopen(outputFileName, readingFlag);
-        void *newDataRegion = malloc((superblockPtr->swap_offset - superblockPtr->data_offset) * size); //TODO: catch memory leaks!
-        fseek(outputPtr, SIZEOFBOOTBLOCK + SIZEOFSUPERBLOCK + superblockPtr->data_offset, SEEK_SET);
-        fread(newDataRegion, ((superblockPtr->swap_offset - superblockPtr->data_offset) * size), 1, outputPtr);
-
         fwrite(bootBlockPtr, SIZEOFBOOTBLOCK, 1, finalOutputPtr);
         fwrite(superblockPtr, SIZEOFSUPERBLOCK, 1, finalOutputPtr);
         fwrite((((void *) superblockPtr) + SIZEOFSUPERBLOCK), superblockPtr->data_offset * size, 1,
-               finalOutputPtr); //TODO: check this is the region I want to be writing...??
-        fwrite(newDataRegion, ((superblockPtr->swap_offset - superblockPtr->data_offset) * size), 1, finalOutputPtr);
+               finalOutputPtr);
+        fwrite(allOfDataRegion, outputFileSize, 1, finalOutputPtr);
 
         //TODO: close files once done! and remove error checking, here!
         fclose(filePtr);
         fclose(outputPtr);
         fclose(finalOutputPtr);
 
-        //open and read both files into memory for debugging purposes...
-        filePtr = fopen(inputFileName, readingFlag);
-        outputPtr = fopen(outputFinalFileName, readingFlag);
+        //TODO: free here!
+        filePtr = fopen(outputFinalFileName, readingFlag);
 
-        //File reading into memory
+        //Read original disk image into memory //TODO: add a max here
         fseek(filePtr, 0L, SEEK_END);
-        long oldFileSize = ftell(filePtr);
+        long inputFileSize = ftell(filePtr);
         rewind(filePtr);
-        printf("Number bytes in file: %ld\n", oldFileSize);
-        void *allOfOldFile = malloc(oldFileSize); //TODO: free this at the end!
-        if (allOfOldFile == NULL) {
+        printf("Number bytes in file: %ld\n", inputFileSize);
+        void *allOfInputFile = malloc(inputFileSize); //TODO: free this at the end!
+        if (allOfInputFile == NULL) {
             //malloc failed
             perror("Malloc failed.\n");
             return FALSE;
         }
-        fread(allOfOldFile, oldFileSize, 1, filePtr); //TODO: recognize here if read was over maximum allowed size!
+        fread(allOfInputFile, inputFileSize, 1, filePtr); //TODO: recognize here if read was over maximum allowed size!
 
-        fseek(outputPtr, 0L, SEEK_END);
-        long newFileSize = ftell(outputPtr);
-        rewind(outputPtr);
-        printf("Number bytes in file: %ld\n", newFileSize);
-        void *allOfNewFile = malloc(newFileSize); //TODO: free this at the end!
-        if (allOfNewFile == NULL) {
-            //malloc failed
-            perror("Malloc failed.\n");
-            return FALSE;
-        }
-        fread(allOfNewFile, newFileSize, 1, outputPtr); //TODO: recognize here if read was over maximum allowed size!
-
-        inode *oldInodePtr = allOfOldFile + SIZEOFSUPERBLOCK + SIZEOFBOOTBLOCK + superblockPtr->inode_offset + 3 * sizeof(inode);
-        inode *newInodePtr = allOfNewFile + SIZEOFSUPERBLOCK + SIZEOFBOOTBLOCK + superblockPtr->inode_offset + 3 * sizeof(inode);
-        newDataRegion = allOfNewFile + offsetBytes(size, superblockPtr->data_offset);
-
-        outputFile(oldInodePtr, newInodePtr, size, dataBlockPtr, newDataRegion, "old 3\0", "new 3\0");
+        //read in and store the superblock, inode region pointer, and data region pointers
+        superblock *superblockPtr = (((void *) allOfInputFile) + SIZEOFBOOTBLOCK);
+        inode *inodePtr = (((void *) allOfInputFile) + firstNodeOffsetInFile);
 
         //print inodes and data blocks prior to reorganization..., output swap region, and make free list, again
         //TODO: build free list, here with currentDataBlock as the head of the list!
         printf("Final Print\n");
         printf("head of inode list %d\n", superblockPtr->free_inode);
-//        printInodes(inodePtr, size, superblockPtr->inode_offset, superblockPtr->data_offset);
+        printInodes(inodePtr, size, superblockPtr->inode_offset, superblockPtr->data_offset);
         printf("head of free list %d\n", superblockPtr->free_block);
 //        printDataBlocks(newDataRegion, size, superblockPtr->data_offset, superblockPtr->swap_offset);
 
@@ -390,3 +361,67 @@ void outputFile(inode *fileToOutputOriginal, inode *fileToOutputNew, int size, v
         fwrite(blockToOutput, size, 1, newOutput);
     }
 }
+
+/*
+ *   outputPtr = fopen(outputFileName, readingFlag);
+        //TODO: clean this up! (A LOT!!!)
+        char *outputMiddleFileName = "Middle\0"; //TODO: free at the end!!!
+        void *blockToOutput;
+
+        //File opening
+        FILE *middleOutput = fopen(outputMiddleFileName, writingFlag);
+        //File reading into memory
+        fseek(outputPtr, 0L, SEEK_END);
+        long middleFileSize = ftell(outputPtr);
+        rewind(outputPtr);
+        printf("Number bytes in file output: %ld\n", middleFileSize);
+        void *allOfMiddleFile = malloc(middleFileSize); //TODO: free this at the end!
+        if (allOfMiddleFile == NULL) {
+            //malloc failed
+            perror("Malloc failed.\n");
+            return FALSE;
+        }
+
+        fread(allOfMiddleFile, middleFileSize, 1, outputPtr); //TODO: recognize here if read was over maximum allowed size!
+
+        blockToOutput = allOfMiddleFile + SIZEOFBOOTBLOCK + SIZEOFSUPERBLOCK + ((superblockPtr->data_offset - superblockPtr->inode_offset) * size) + 623 * size;
+        fwrite(blockToOutput, size, 1, middleOutput);
+
+        fclose(outputPtr);
+
+
+        //open and read both files into memory for debugging purposes...
+        filePtr = fopen(inputFileName, readingFlag);
+        outputPtr = fopen(outputFinalFileName, readingFlag);
+
+        //File reading into memory
+        fseek(filePtr, 0L, SEEK_END);
+        long oldFileSize = ftell(filePtr);
+        rewind(filePtr);
+        printf("Number bytes in file: %ld\n", oldFileSize);
+        void *allOfOldFile = malloc(oldFileSize); //TODO: free this at the end!
+        if (allOfOldFile == NULL) {
+            //malloc failed
+            perror("Malloc failed.\n");
+            return FALSE;
+        }
+        fread(allOfOldFile, oldFileSize, 1, filePtr); //TODO: recognize here if read was over maximum allowed size!
+
+        fseek(outputPtr, 0L, SEEK_END);
+        long newFileSize = ftell(outputPtr);
+        rewind(outputPtr);
+        printf("Number bytes in file: %ld\n", newFileSize);
+        void *allOfNewFile = malloc(newFileSize); //TODO: free this at the end!
+        if (allOfNewFile == NULL) {
+            //malloc failed
+            perror("Malloc failed.\n");
+            return FALSE;
+        }
+        fread(allOfNewFile, newFileSize, 1, outputPtr); //TODO: recognize here if read was over maximum allowed size!
+
+        inode *oldInodePtr = allOfOldFile + SIZEOFSUPERBLOCK + SIZEOFBOOTBLOCK + superblockPtr->inode_offset + 3 * sizeof(inode);
+        inode *newInodePtr = allOfNewFile + SIZEOFSUPERBLOCK + SIZEOFBOOTBLOCK + superblockPtr->inode_offset + 3 * sizeof(inode);
+        newDataRegion = allOfNewFile + offsetBytes(size, superblockPtr->data_offset);
+
+        outputFile(oldInodePtr, newInodePtr, size, dataBlockPtr, newDataRegion, "old 3\0", "new 3\0");
+ */
