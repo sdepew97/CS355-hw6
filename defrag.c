@@ -213,10 +213,10 @@ boolean defragment(char *inputFile) {
 
         //Read original disk image into memory //TODO: add a max here
         fseek(filePtr, 0L, SEEK_END);
-        long inputFileSize = ftell(filePtr);
+        inputFileSize = ftell(filePtr);
         rewind(filePtr);
         printf("Number bytes in file: %ld\n", inputFileSize);
-        void *allOfInputFile = malloc(inputFileSize); //TODO: free this at the end!
+        allOfInputFile = malloc(inputFileSize); //TODO: free this at the end!
         if (allOfInputFile == NULL) {
             //malloc failed
             perror("Malloc failed.\n");
@@ -225,8 +225,8 @@ boolean defragment(char *inputFile) {
         fread(allOfInputFile, inputFileSize, 1, filePtr); //TODO: recognize here if read was over maximum allowed size!
 
         //read in and store the superblock, inode region pointer, and data region pointers
-        superblock *superblockPtr = (((void *) allOfInputFile) + SIZEOFBOOTBLOCK);
-        inode *inodePtr = (((void *) allOfInputFile) + firstNodeOffsetInFile);
+        superblockPtr = (((void *) allOfInputFile) + SIZEOFBOOTBLOCK);
+        inodePtr = (((void *) allOfInputFile) + firstNodeOffsetInFile);
 
         //print inodes and data blocks prior to reorganization..., output swap region, and make free list, again
         //TODO: build free list, here with currentDataBlock as the head of the list!
