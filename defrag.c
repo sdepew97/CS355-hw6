@@ -204,7 +204,7 @@ boolean defragment(char *inputFile) {
         fwrite(allOfDataRegion, outputFileSize, 1, finalOutputPtr);
         //TODO: add swap region and add free blocks, here
 
-        //TODO: close files once done! and remove error checking, here!
+        //TODO: close files once done! and remove error checking, here! REMOVE MIDDLE FILE!
         fclose(filePtr);
         fclose(outputPtr);
         fclose(finalOutputPtr);
@@ -275,6 +275,10 @@ boolean defragment(char *inputFile) {
 
         //TODO: also see if works with pointer from new data file
         outputFile(oldInodePtr, newInodePtr, size, dataBlockOld, dataBlockNew, "old 3\0", "new 3\0");
+
+        //TODO: finish freeing memory
+        free(inputFileName);
+        free(outputFinalFileName);
 
         return TRUE; //TODO: remove once not debugging...
     } else {
