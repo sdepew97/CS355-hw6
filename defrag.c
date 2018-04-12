@@ -236,7 +236,7 @@ boolean defragment(char *inputFile) {
         printf("head of inode list %d\n", superblockPtr->free_inode);
         printInodes(inodePtr, size, superblockPtr->inode_offset, superblockPtr->data_offset);
         printf("head of free list %d\n", superblockPtr->free_block);
-        printDataBlocks(dataBlockPtr, size, superblockPtr->data_offset, superblockPtr->swap_offset);
+//        printDataBlocks(dataBlockPtr, size, superblockPtr->data_offset, superblockPtr->swap_offset);
 
         //TODO: remove at the end
         //open and read both files into memory for debugging purposes...
@@ -268,13 +268,13 @@ boolean defragment(char *inputFile) {
         }
         fread(allOfNewFile, newFileSize, 1, outputPtr); //TODO: recognize here if read was over maximum allowed size!
 
-        inode *oldInodePtr = allOfOldFile + SIZEOFSUPERBLOCK + SIZEOFBOOTBLOCK + superblockPtr->inode_offset + 3 * sizeof(inode);
-        inode *newInodePtr = allOfNewFile + SIZEOFSUPERBLOCK + SIZEOFBOOTBLOCK + superblockPtr->inode_offset + 3 * sizeof(inode);
-
-//        newDataRegion = allOfNewFile + offsetBytes(size, superblockPtr->data_offset);
+        inode *oldInodePtr = allOfOldFile + SIZEOFSUPERBLOCK + SIZEOFBOOTBLOCK + superblockPtr->inode_offset * size + 3 * sizeof(inode);
+        inode *newInodePtr = allOfNewFile + SIZEOFSUPERBLOCK + SIZEOFBOOTBLOCK + superblockPtr->inode_offset * size + 3 * sizeof(inode);
+        void *dataBlockOld = allOfOldFile + SIZEOFSUPERBLOCK + SIZEOFBOOTBLOCK + superblockPtr->data_offset * size;
+        void *dataBlockNew = allOfNewFile + SIZEOFSUPERBLOCK + SIZEOFBOOTBLOCK + superblockPtr->data_offset * size;
 
         //TODO: also see if works with pointer from new data file
-        outputFile(oldInodePtr, newInodePtr, size, dataBlockPtr, allOfDataRegion, "old 3\0", "new 3\0");
+        outputFile(oldInodePtr, newInodePtr, size, dataBlockOld, dataBlockNew, "old 3\0", "new 3\0");
 
         return TRUE; //TODO: remove once not debugging...
     } else {
@@ -386,7 +386,7 @@ void outputFile(inode *fileToOutputOriginal, inode *fileToOutputNew, int size, v
     long numBlocks = ceilf(divisionResult); //number of blocks used, total (take ceiling)
 
     for(int i=0; i<numBlocks; i++) {
-        blockToOutput = dataRegionOld + fileToOutputOriginal->dblocks[i] * size;
+        blockToOutput = dataRegionOld + (fileToOutputOriginal->dblocks[i]) * size;
         fwrite(blockToOutput, size, 1, oldOutput);
     }
 
