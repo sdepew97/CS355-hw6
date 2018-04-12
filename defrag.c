@@ -278,7 +278,7 @@ boolean defragment(char *inputFile) {
         dataBlockOld = allOfOldFile + SIZEOFSUPERBLOCK + SIZEOFBOOTBLOCK + superblockPtr->data_offset * size;
         dataBlockNew = allOfNewFile + SIZEOFSUPERBLOCK + SIZEOFBOOTBLOCK + superblockPtr->data_offset * size;
 
-        outputIFile(oldInodePtr, newInodePtr, size, dataBlockOld, dataBlockNew, "old 0\0", "new 0\0");
+//        outputIFile(oldInodePtr, newInodePtr, size, dataBlockOld, dataBlockNew, "old 0\0", "new 0\0");
 
         //TODO: finish freeing memory
         free(allOfInputFile);
@@ -437,10 +437,10 @@ void outputDFile(inode *fileToOutputOriginal, inode *fileToOutputNew, int size, 
 
     printDBlocks(numBlocks, fileToOutputNew->dblocks, dataRegionNew, size, newOutput);
 
-//    free(outputOldFileName);
-//    free(outputNewFileName);
-//    fclose(oldOutput);
-//    fclose(newOutput);
+    free(outputOldFileName);
+    free(outputNewFileName);
+    fclose(oldOutput);
+    fclose(newOutput);
 }
 
 void outputIFile(inode *fileToOutputOriginal, inode *fileToOutputNew, int size, void *dataRegionOld, void *dataRegionNew, char *oldOutputName, char *newOutputName) {
