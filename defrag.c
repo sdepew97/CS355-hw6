@@ -276,10 +276,8 @@ boolean defragment(char *inputFile) {
 
         oldInodePtr = allOfOldFile + SIZEOFSUPERBLOCK + SIZEOFBOOTBLOCK + superblockPtr->inode_offset * size + 0 * sizeof(inode);
         newInodePtr = allOfNewFile + SIZEOFSUPERBLOCK + SIZEOFBOOTBLOCK + superblockPtr->inode_offset * size + 0 * sizeof(inode);
-        dataBlockOld = allOfOldFile + SIZEOFSUPERBLOCK + SIZEOFBOOTBLOCK + superblockPtr->data_offset * size;
-        dataBlockNew = allOfNewFile + SIZEOFSUPERBLOCK + SIZEOFBOOTBLOCK + superblockPtr->data_offset * size;
 
-//        outputIFile(oldInodePtr, newInodePtr, size, dataBlockOld, dataBlockNew, "old 0\0", "new 0\0");
+        outputIFile(oldInodePtr, newInodePtr, size, dataBlockOld, dataBlockNew, "old 0\0", "new 0\0");
 
         //TODO: finish freeing memory
         free(allOfInputFile);
