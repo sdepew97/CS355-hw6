@@ -114,7 +114,6 @@ boolean defragment(char *inputFile) {
                                                  superblockPtr->inode_offset); //location of where FIRST inode starts in input file
         long dataBlockOffsetInFile = offsetBytes(size, superblockPtr->data_offset); //start of data region in file
         long swapBlockOffsetInFile = offsetBytes(size, superblockPtr->swap_offset);
-//        printf("Size: %d\n", size);
 
         inode *inodePtr = (((void *) allOfInputFile) + firstNodeOffsetInFile);
         void *dataBlockPtr = (((void *) allOfInputFile) + dataBlockOffsetInFile);
@@ -126,6 +125,7 @@ boolean defragment(char *inputFile) {
 //        printf("head of free list %d\n", superblockPtr->free_block);
 //        printDataBlocks(dataBlockPtr, size, superblockPtr->data_offset, superblockPtr->swap_offset);
 
+        long currentDataBlock = 0; //start the counter that keeps track of the data blocks that are being reorganized...
         inode *currentInode = inodePtr;
 
         //read all the inodes and reorganize their data blocks individually!
