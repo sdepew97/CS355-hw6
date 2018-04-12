@@ -271,7 +271,14 @@ boolean defragment(char *inputFile) {
         void *dataBlockNew = allOfNewFile + SIZEOFSUPERBLOCK + SIZEOFBOOTBLOCK + superblockPtr->data_offset * size;
 
         //TODO: also see if works with pointer from new data file
-        outputFile(oldInodePtr, newInodePtr, size, dataBlockOld, dataBlockNew, "old 3\0", "new 3\0");
+        outputDFile(oldInodePtr, newInodePtr, size, dataBlockOld, dataBlockNew, "old 3\0", "new 3\0");
+
+        oldInodePtr = allOfOldFile + SIZEOFSUPERBLOCK + SIZEOFBOOTBLOCK + superblockPtr->inode_offset * size + 0 * sizeof(inode);
+        newInodePtr = allOfNewFile + SIZEOFSUPERBLOCK + SIZEOFBOOTBLOCK + superblockPtr->inode_offset * size + 0 * sizeof(inode);
+        dataBlockOld = allOfOldFile + SIZEOFSUPERBLOCK + SIZEOFBOOTBLOCK + superblockPtr->data_offset * size;
+        dataBlockNew = allOfNewFile + SIZEOFSUPERBLOCK + SIZEOFBOOTBLOCK + superblockPtr->data_offset * size;
+
+        outputIFile(oldInodePtr, newInodePtr, size, dataBlockOld, dataBlockNew, "old 0\0", "new 0\0");
 
         //TODO: finish freeing memory
         free(allOfInputFile);
@@ -317,7 +324,6 @@ long orderIBlocks(int numToWriteIBlock, int numToWriteData, long nodeLocation, i
     long nodeLocationValue = nodeLocation;
     long maxArray = size / sizeof(int);
     void *currentIBlockOffsetsValue;
-    void *currentBlock;
 
     int numToWrite = numToWriteData;
 
@@ -385,10 +391,32 @@ void printDBlocks(int numToWrite, int *offsets, void *dataPtr, int size, FILE *o
     }
 }
 
+void printIBlocks(int numToWriteIBlock, int numToWriteData, int *offsets, void *dataPtr, int size, FILE *outputFile) {
+    long maxArray = size / sizeof(int);
+    void *currentIBlockOffsetsValue;
+    int numToWrite = numToWriteData;
+
+    for (int i = 0; i < numToWriteIBlock; i++) {
+        //write out indirect block to file
+        currentIBlockOffsetsValue = (dataPtr + (offsets[i] * size));
+        fwrite(currentIBlockOffsetsValue, size, 1, outputFile);
+
+        //write out data blocks to file
+        if (numToWrite > maxArray) {
+            printDBlocks(maxArray, (int *) currentIBlockOffsetsValue, dataPtr,
+                         size, outputFile);
+            numToWrite -= maxArray;
+        } else {
+            printDBlocks(numToWrite, (int *) currentIBlockOffsetsValue, dataPtr,
+                         size, outputFile);
+        }
+    }
+}
+
 /*
  * Error checking method //TODO: write to allow for indirect files!
  */
-void outputFile(inode *fileToOutputOriginal, inode *fileToOutputNew, int size, void *dataRegionOld, void *dataRegionNew, char *oldOutputName, char *newOutputName) {
+void outputDFile(inode *fileToOutputOriginal, inode *fileToOutputNew, int size, void *dataRegionOld, void *dataRegionNew, char *oldOutputName, char *newOutputName) {
     char *writingFlag = "wb+\0";
     char *outputOldFileName = strdup(oldOutputName); //TODO: free at the end!!!
     char *outputNewFileName = strdup(newOutputName); //TODO: free at the end!!!
@@ -414,6 +442,61 @@ void outputFile(inode *fileToOutputOriginal, inode *fileToOutputNew, int size, v
     fclose(oldOutput);
     fclose(newOutput);
 }
+
+void outputIFile(inode *fileToOutputOriginal, inode *fileToOutputNew, int size, void *dataRegionOld, void *dataRegionNew, char *oldOutputName, char *newOutputName) {
+    char *writingFlag = "wb+\0";
+    char *outputOldFileName = strdup(oldOutputName); //TODO: free at the end!!!
+    char *outputNewFileName = strdup(newOutputName); //TODO: free at the end!!!
+
+    //File opening
+    FILE *oldOutput = fopen(outputOldFileName, writingFlag);
+    FILE *newOutput = fopen(outputNewFileName, writingFlag);
+
+    //read and output old file's data blocks
+    float divisionResult = (float) fileToOutputOriginal->size / (float) size;
+    long numBlocks = ceilf(divisionResult); //number of blocks used, total (take ceiling)
+    printDBlocks(N_DBLOCKS, fileToOutputOriginal->dblocks, dataRegionOld, size, oldOutput);
+    numBlocks -= 10;
+
+    //calculate number of blocks total and number of indirect layers required to get those blocks...
+    divisionResult = ((float) numBlocks) / ((float) (size) / (float) (sizeof(int)));
+    long numIndirect = ceilf(divisionResult);
+    printIBlocks(numIndirect, numBlocks, fileToOutputOriginal->iblocks, dataRegionOld, size, oldOutput);
+
+    //read and output new file's data blocks
+
+    divisionResult = (float) fileToOutputNew->size / (float) size;
+    numBlocks = ceilf(divisionResult); //number of blocks used, total (take ceiling)
+    printDBlocks(N_DBLOCKS, fileToOutputNew->dblocks, dataRegionNew, size, newOutput);
+    numBlocks -= 10;
+
+    //calculate number of blocks total and number of indirect layers required to get those blocks...
+    divisionResult = ((float) numBlocks) / ((float) (size) / (float) (sizeof(int)));
+    numIndirect = ceilf(divisionResult);
+    printIBlocks(numIndirect, numBlocks, fileToOutputNew->iblocks, dataRegionNew, size, newOutput);
+
+    free(outputOldFileName);
+    free(outputNewFileName);
+    fclose(oldOutput);
+    fclose(newOutput);
+}
+
+
+/*
+ *   float divisionResult = (float) currentInode->size / (float) size;
+                    long numBlocks = ceilf(divisionResult); //number of blocks used, total (take ceiling)
+
+                    currentDataBlock = orderDBlocks(N_DBLOCKS, currentDataBlock, currentInode->dblocks, dataBlockPtr,
+                                                    size, outputPtr);
+                    numBlocks -= 10;
+
+                    //calculate number of blocks total and number of indirect layers required to get those blocks...
+                    divisionResult = ((float) numBlocks) / ((float) (size) / (float) (sizeof(int)));
+                    long numIndirect = ceilf(divisionResult);
+                    printf("numIndirect: %ld\n", numIndirect);
+                    currentDataBlock = orderIBlocks(numIndirect, numBlocks, currentDataBlock, currentInode->iblocks,
+                                                    dataBlockPtr, size, outputPtr);
+ */
 
 /*
  *   outputPtr = fopen(outputFileName, readingFlag);
