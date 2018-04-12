@@ -202,7 +202,7 @@ boolean defragment(char *inputFile) {
         //Write new inode region! and write the entire file!
         fwrite(bootBlockPtr, SIZEOFBOOTBLOCK, 1, finalOutputPtr);
         fwrite(superblockPtr, SIZEOFSUPERBLOCK, 1, finalOutputPtr);
-//        fwrite(((void *) superblockPtr + SIZEOFSUPERBLOCK), (superblockPtr->inode_offset * size), 1, finalOutputPtr);
+        fwrite(((void *) superblockPtr + SIZEOFSUPERBLOCK), (superblockPtr->inode_offset * size), 1, finalOutputPtr);
 //        fwrite((((void *) superblockPtr) + SIZEOFSUPERBLOCK + (superblockPtr->inode_offset * size)), superblockPtr->data_offset * size, 1,
 //               finalOutputPtr);
 //        fwrite(allOfDataRegion, outputFileSize, 1, finalOutputPtr);
