@@ -92,7 +92,7 @@ boolean defragment(char *inputFile) {
         fseek(filePtr, 0L, SEEK_END);
         long inputFileSize = ftell(filePtr);
         rewind(filePtr);
-        printf("Number bytes in file: %ld\n", inputFileSize);
+        printf("Number bytes in input file: %ld\n", inputFileSize);
         void *allOfInputFile = malloc(inputFileSize); //TODO: free this at the end!
         if (allOfInputFile == NULL) {
             //malloc failed
@@ -189,12 +189,24 @@ boolean defragment(char *inputFile) {
         }
         fread(allOfDataRegion, outputFileSize, 1, outputPtr); //TODO: recognize here if read was over maximum allowed size! (have second read, but if it works, then make a note)
 
+        int valueToTransfer;
+
+        //assemble the free list of inodes and write to file
+        superblockPtr->free_inode = currentDataBlock;
+        for(int i=currentDataBlock; i<swapBlockOffsetInFile; i++) {
+            valueToTransfer = i + 1;
+            ((block *) (allOfDataRegion + ((dataBlockOffsetInFile + i) *size)))->next = valueToTransfer;
+        }
+        ((block *) (allOfDataRegion + ((dataBlockOffsetInFile + swapBlockOffsetInFile -1) *size)))->next = -1; //set value for last block
+
         //Write new inode region! and write the entire file!
         fwrite(bootBlockPtr, SIZEOFBOOTBLOCK, 1, finalOutputPtr);
         fwrite(superblockPtr, SIZEOFSUPERBLOCK, 1, finalOutputPtr);
         fwrite((((void *) superblockPtr) + SIZEOFSUPERBLOCK), superblockPtr->data_offset * size, 1,
                finalOutputPtr);
         fwrite(allOfDataRegion, outputFileSize, 1, finalOutputPtr);
+        fwrite((((void *) superblockPtr) + SIZEOFSUPERBLOCK), superblockPtr->data_offset * size, 1,
+               finalOutputPtr);
         //TODO: add swap region and add free blocks, here
 
         //TODO: close files once done! and remove error checking, here! REMOVE MIDDLE FILE!
