@@ -193,7 +193,7 @@ boolean defragment(char *inputFile) {
 
         //assemble the free list of inodes and write to file
         superblockPtr->free_inode = currentDataBlock;
-        for(int i=currentDataBlock; i<(superblockPtr->swap_offset)-2; i++) { //TODO: update and fix!!
+        for(int i=currentDataBlock; i<(superblockPtr->swap_offset)-1; i++) { //TODO: update and fix!!
             valueToTransfer = i + 1;
             ((block *) (allOfInputFile + ((superblockPtr->data_offset + i) *size)))->next = valueToTransfer;
         }
