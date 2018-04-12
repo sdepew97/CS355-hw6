@@ -123,6 +123,7 @@ boolean defragment(char *inputFile) {
         printf("head of inode list %d\n", superblockPtr->free_inode);
         printInodes(inodePtr, size, superblockPtr->inode_offset, superblockPtr->data_offset);
         printf("head of free list %d\n", superblockPtr->free_block);
+        printf("swap offset %d\n", superblockPtr->swap_offset);
         printDataBlocks(dataBlockPtr, size, superblockPtr->data_offset, superblockPtr->swap_offset);
 
         long currentDataBlock = 0; //start the counter that keeps track of the data blocks that are being reorganized...
@@ -205,7 +206,7 @@ boolean defragment(char *inputFile) {
         fwrite(((void *) superblockPtr + SIZEOFSUPERBLOCK), (superblockPtr->inode_offset * size), 1, finalOutputPtr);
         fwrite((((void *) superblockPtr) + SIZEOFSUPERBLOCK + (superblockPtr->inode_offset * size)), superblockPtr->data_offset * size, 1,
                finalOutputPtr);
-//        fwrite(allOfDataRegion, outputFileSize, 1, finalOutputPtr);
+        fwrite(allOfDataRegion, outputFileSize, 1, finalOutputPtr);
 //        fwrite((dataBlockPtr + (currentDataBlock * size)), (superblockPtr->swap_offset - currentDataBlock) * size, 1, finalOutputPtr);
 
         //TODO: add swap region and add free blocks, here
