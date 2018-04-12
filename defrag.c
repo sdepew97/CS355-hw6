@@ -121,18 +121,11 @@ boolean defragment(char *inputFile) {
 
         //print inodes and data blocks prior to reorganization...
         //TODO: remove debugging information at end!
-        printf("head of inode list %d\n", superblockPtr->free_inode);
-        printInodes(inodePtr, size, superblockPtr->inode_offset, superblockPtr->data_offset);
-        printf("head of free list %d\n", superblockPtr->free_block);
-        printDataBlocks(dataBlockPtr, size, superblockPtr->data_offset, superblockPtr->swap_offset);
+//        printf("head of inode list %d\n", superblockPtr->free_inode);
+//        printInodes(inodePtr, size, superblockPtr->inode_offset, superblockPtr->data_offset);
+//        printf("head of free list %d\n", superblockPtr->free_block);
+//        printDataBlocks(dataBlockPtr, size, superblockPtr->data_offset, superblockPtr->swap_offset);
 
-//        //write original bootblock, superblock and inodes to output file, so that reorganization can occur of data blocks
-//        fwrite(bootBlockPtr, SIZEOFBOOTBLOCK, 1, outputPtr);
-//        fwrite(superblockPtr, SIZEOFSUPERBLOCK, 1, outputPtr);
-//        fwrite((((void *) superblockPtr) + SIZEOFSUPERBLOCK), superblockPtr->data_offset * size, 1,
-//               outputPtr);
-
-        long currentDataBlock = 0; //start the counter that keeps track of the data blocks that are being reorganized...
         inode *currentInode = inodePtr;
 
         //read all the inodes and reorganize their data blocks individually!
@@ -209,6 +202,9 @@ boolean defragment(char *inputFile) {
         fclose(outputPtr);
         fclose(finalOutputPtr);
 
+        free(allOfInputFile);
+        free(allOfDataRegion);
+
         //TODO: free here!
         filePtr = fopen(outputFinalFileName, readingFlag);
 
@@ -277,6 +273,8 @@ boolean defragment(char *inputFile) {
         outputFile(oldInodePtr, newInodePtr, size, dataBlockOld, dataBlockNew, "old 3\0", "new 3\0");
 
         //TODO: finish freeing memory
+        free(allOfOldFile);
+        free(allOfNewFile);
         free(inputFileName);
         free(outputFinalFileName);
 
