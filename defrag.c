@@ -319,6 +319,7 @@ long orderIBlocks(int numToWriteIBlock, int numToWriteData, long nodeLocation, i
         currentIBlockOffsetsValue = (dataPtr + (offsets[i] * size));
         offsets[i] = nodeLocationValue;
         fwrite(currentIBlockOffsetsValue, size, 1, outputFile);
+        nodeLocationValue++; //TODO: did this fix it??
 
         //write out data blocks to file
         if (numToWrite > maxArray) {
@@ -385,7 +386,7 @@ void outputFile(inode *fileToOutputOriginal, inode *fileToOutputNew, int size, v
     float divisionResult = (float) fileToOutputOriginal->size / (float) size;
     long numBlocks = ceilf(divisionResult); //number of blocks used, total (take ceiling)
 
-    for(int i=0; i<numBlocks; i++) {
+    for (int i = 0; i < numBlocks; i++) {
         blockToOutput = dataRegionOld + ((fileToOutputOriginal->dblocks[i]) * size);
         fwrite(blockToOutput, size, 1, oldOutput);
     }
@@ -395,7 +396,7 @@ void outputFile(inode *fileToOutputOriginal, inode *fileToOutputNew, int size, v
     divisionResult = (float) fileToOutputNew->size / (float) size;
     numBlocks = ceilf(divisionResult); //number of blocks used, total (take ceiling)
 
-    for(int i=0; i<numBlocks; i++) {
+    for (int i = 0; i < numBlocks; i++) {
         blockToOutput = dataRegionNew + ((fileToOutputNew->dblocks[i]) * size);
         fwrite(blockToOutput, size, 1, newOutput);
     }
