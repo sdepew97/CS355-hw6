@@ -178,9 +178,8 @@ boolean defragment(char *inputFile) {
             currentInode = ((void *) currentInode) + sizeof(inode);
         }
 
-
-
         fclose(outputPtr);
+
         outputPtr = fopen(outputFileName, readingFlag);
         //TODO: clean this up! (A LOT!!!)
         char *outputMiddleFileName = "Middle\0"; //TODO: free at the end!!!
@@ -199,11 +198,11 @@ boolean defragment(char *inputFile) {
             perror("Malloc failed.\n");
             return FALSE;
         }
+
         fread(allOfMiddleFile, middleFileSize, 1, middleOutput); //TODO: recognize here if read was over maximum allowed size!
 
-            blockToOutput = allOfMiddleFile + SIZEOFBOOTBLOCK + SIZEOFSUPERBLOCK + ((superblockPtr->data_offset - superblockPtr->inode_offset) * size) + 623 * size;
-            fwrite(blockToOutput, size, 1, middleOutput);
-
+        blockToOutput = allOfMiddleFile + SIZEOFBOOTBLOCK + SIZEOFSUPERBLOCK + ((superblockPtr->data_offset - superblockPtr->inode_offset) * size) + 623 * size;
+        fwrite(blockToOutput, size, 1, middleOutput);
 
         fclose(outputPtr);
         //Write new inode region! and write the entire file!
@@ -325,16 +324,6 @@ long orderIBlocks(int numToWriteIBlock, int numToWriteData, long nodeLocation, i
     return nodeLocationValue;
 }
 
-//void *getBlock(FILE *inputFile, long offsetValue, long blockSize) {
-//    void *dataBlock = malloc(blockSize);
-//    //position file pointer, first...
-//    int returnFSeek = fseek(inputFile, offsetValue, SEEK_SET);
-//    fread(dataBlock, blockSize, 1, inputFile);
-//    return dataBlock;
-//}
-
-//TODO: write "seek block" method to return the location of the block as a ptr? or the offset? not sure which
-
 long offsetBytes(int blockSize, int offset) {
     return (SIZEOFBOOTBLOCK + SIZEOFSUPERBLOCK + blockSize * offset);
 }
@@ -397,7 +386,7 @@ void outputFile(inode *fileToOutputOriginal, inode *fileToOutputNew, int size, v
     numBlocks = ceilf(divisionResult); //number of blocks used, total (take ceiling)
 
     for(int i=0; i<numBlocks; i++) {
-        blockToOutput = dataRegionNew + (fileToOutputNew->dblocks[i]+1) * size;
+        blockToOutput = dataRegionNew + (fileToOutputNew->dblocks[i]) * size;
         fwrite(blockToOutput, size, 1, newOutput);
     }
 }
