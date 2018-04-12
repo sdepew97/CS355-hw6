@@ -391,7 +391,7 @@ void printDBlocks(int numToWrite, int *offsets, void *dataPtr, int size, FILE *o
 }
 
 void printIBlocks(int numToWriteIBlock, int numToWriteData, int *offsets, void *dataPtr, int size, FILE *outputFile) {
-    long maxArray = (size / sizeof(int))-1;
+    long maxArray = size / sizeof(int);
     void *currentIBlockOffsetsValue;
     int numToWrite = numToWriteData;
 
