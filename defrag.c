@@ -270,9 +270,11 @@ boolean defragment(char *inputFile) {
 
         inode *oldInodePtr = allOfOldFile + SIZEOFSUPERBLOCK + SIZEOFBOOTBLOCK + superblockPtr->inode_offset + 3 * sizeof(inode);
         inode *newInodePtr = allOfNewFile + SIZEOFSUPERBLOCK + SIZEOFBOOTBLOCK + superblockPtr->inode_offset + 3 * sizeof(inode);
+
 //        newDataRegion = allOfNewFile + offsetBytes(size, superblockPtr->data_offset);
 
-//        outputFile(oldInodePtr, newInodePtr, size, dataBlockPtr, newDataRegion, "old 3\0", "new 3\0");
+        //TODO: also see if works with pointer from new data file
+        outputFile(oldInodePtr, newInodePtr, size, dataBlockPtr, allOfDataRegion, "old 3\0", "new 3\0");
 
         return TRUE; //TODO: remove once not debugging...
     } else {
