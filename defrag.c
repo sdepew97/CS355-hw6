@@ -410,6 +410,8 @@ void outputFile(inode *fileToOutputOriginal, inode *fileToOutputNew, int size, v
 
     free(outputOldFileName);
     free(outputNewFileName);
+    fclose(oldOutput);
+    fclose(newOutput);
 }
 
 /*
