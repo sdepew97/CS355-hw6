@@ -193,7 +193,7 @@ boolean defragment(char *inputFile) {
 
         //assemble the free list of inodes and write to file
         superblockPtr->free_inode = currentDataBlock;
-        for(int i=currentDataBlock; i<(superblockPtr->swap_offset)-1; i++) { //TODO: update and fix!!
+        for(int i=currentDataBlock; i<(superblockPtr->swap_offset)-2; i++) { //TODO: update and fix!! (check output correct)
             valueToTransfer = i + 1;
             ((block *) (allOfInputFile + ((superblockPtr->data_offset + i) *size)))->next = valueToTransfer;
         }
@@ -205,8 +205,8 @@ boolean defragment(char *inputFile) {
         fwrite((((void *) superblockPtr) + SIZEOFSUPERBLOCK), superblockPtr->data_offset * size, 1,
                finalOutputPtr);
         fwrite(allOfDataRegion, outputFileSize, 1, finalOutputPtr);
-        fwrite((((void *) superblockPtr) + SIZEOFSUPERBLOCK), superblockPtr->data_offset * size, 1,
-               finalOutputPtr);
+//        fwrite((((void *) superblockPtr) + SIZEOFSUPERBLOCK), superblockPtr->data_offset * size, 1, finalOutputPtr);
+
         //TODO: add swap region and add free blocks, here
 
         //TODO: close files once done! and remove error checking, here! REMOVE MIDDLE FILE!
@@ -224,7 +224,7 @@ boolean defragment(char *inputFile) {
         fseek(filePtr, 0L, SEEK_END);
         inputFileSize = ftell(filePtr);
         rewind(filePtr);
-        printf("Number bytes in file: %ld\n", inputFileSize);
+        printf("Number bytes in output file: %ld\n", inputFileSize);
         allOfInputFile = malloc(inputFileSize); //TODO: free this at the end!
         if (allOfInputFile == NULL) {
             //malloc failed
