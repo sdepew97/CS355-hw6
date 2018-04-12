@@ -273,6 +273,7 @@ boolean defragment(char *inputFile) {
         outputFile(oldInodePtr, newInodePtr, size, dataBlockOld, dataBlockNew, "old 3\0", "new 3\0");
 
         //TODO: finish freeing memory
+        free(allOfInputFile);
         free(allOfOldFile);
         free(allOfNewFile);
         free(inputFileName);
