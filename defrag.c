@@ -460,7 +460,7 @@ void outputIFile(inode *fileToOutputOriginal, inode *fileToOutputNew, int size, 
     //calculate number of blocks total and number of indirect layers required to get those blocks...
     divisionResult = ((float) numBlocks) / ((float) (size) / (float) (sizeof(int)));
     long numIndirect = ceilf(divisionResult);
-//    printIBlocks(numIndirect, numBlocks, fileToOutputOriginal->iblocks, dataRegionOld, size, oldOutput);
+    printIBlocks(numIndirect, numBlocks, fileToOutputOriginal->iblocks, dataRegionOld, size, oldOutput);
 
     //read and output new file's data blocks
 
