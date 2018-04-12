@@ -391,14 +391,13 @@ void printDBlocks(int numToWrite, int *offsets, void *dataPtr, int size, FILE *o
 }
 
 void printIBlocks(int numToWriteIBlock, int numToWriteData, int *offsets, void *dataPtr, int size, FILE *outputFile) {
-    long maxArray = size / sizeof(int);
+    long maxArray = (size / sizeof(int))-1;
     void *currentIBlockOffsetsValue;
     int numToWrite = numToWriteData;
 
     for (int i = 0; i < numToWriteIBlock; i++) {
         //write out indirect block to file
         currentIBlockOffsetsValue = (dataPtr + (offsets[i] * size));
-        fwrite(currentIBlockOffsetsValue, size, 1, outputFile);
 
         //write out data blocks to file
         if (numToWrite > maxArray) {
