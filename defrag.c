@@ -196,7 +196,7 @@ boolean defragment(char *inputFile) {
         superblockPtr->free_block = currentDataBlock;
         for(int i=currentDataBlock; i<=(superblockPtr->swap_offset - superblockPtr->data_offset); i++) { //TODO: update and fix!! (check output correct)
             valueToTransfer = i + 1;
-            ((block *) (allOfInputFile + ((superblockPtr->data_offset + i + 2) *size)))->next = valueToTransfer;
+            ((block *) (allOfInputFile + SIZEOFBOOTBLOCK + SIZEOFSUPERBLOCK + ((superblockPtr->data_offset + i) *size)))->next = valueToTransfer;
         }
         ((block *) (allOfInputFile + SIZEOFSUPERBLOCK + SIZEOFBOOTBLOCK + ((superblockPtr->swap_offset - 1) *size)))->next = -1; //set value for last block
 
