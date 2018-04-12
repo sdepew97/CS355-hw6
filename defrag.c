@@ -131,7 +131,7 @@ boolean defragment(char *inputFile) {
         printf("head of inode list %d\n", superblockPtr->free_inode);
         printInodes(inodePtr, size, superblockPtr->inode_offset, superblockPtr->data_offset);
         printf("head of free list %d\n", superblockPtr->free_block);
-//        printDataBlocks(dataBlockPtr, size, superblockPtr->data_offset, superblockPtr->swap_offset);
+        printDataBlocks(dataBlockPtr, size, superblockPtr->data_offset, superblockPtr->swap_offset);
 
         //write original superblock and inodes to output file, so that reorganization can occur of data blocks
         fwrite(superblockPtr, SIZEOFSUPERBLOCK, 1, outputPtr);
