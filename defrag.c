@@ -188,7 +188,7 @@ boolean defragment(char *inputFile) {
         fseek(outputPtr, 0L, SEEK_END);
         long middleFileSize = ftell(outputPtr);
         rewind(outputPtr);
-        printf("Number bytes in file: %ld\n", outputPtr);
+        printf("Number bytes in file output: %ld\n", outputPtr);
         void *allOfMiddleFile = malloc(middleFileSize); //TODO: free this at the end!
         if (allOfMiddleFile == NULL) {
             //malloc failed
