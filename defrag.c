@@ -189,7 +189,6 @@ boolean defragment(char *inputFile) {
                     //TODO: implement this one once other one is working
                 }
                 else if (currentInode->size > I2BLOCKS && currentInode->size <= I3BLOCKS) {
-//                    currentDataBlock = orderDBlocks(currentDataBlock, &inodePtr, dataBlockOffsetInFile, size, filePtr, outputPtr);
                     //TODO: implement this one once other one is working
 
                     float divisionResult = (float) currentInode->size / (float) size;
@@ -199,7 +198,7 @@ boolean defragment(char *inputFile) {
                                                     size, outputPtr);
                     numBlocks -= N_DBLOCKS;
 
-                    currentDataBlock = orderIBlocks(N_IBLOCKS, N_DBLOCKS, currentDataBlock, currentInode->iblocks,
+                    currentDataBlock = orderIBlocks(N_IBLOCKS, numBlocks, currentDataBlock, currentInode->iblocks,
                                                     dataBlockPtr,
                                                     size, outputPtr);
 
@@ -214,9 +213,12 @@ boolean defragment(char *inputFile) {
                     divisionResult = ((float) numBlocks) / (((float) (size) / (float) (sizeof(int))) *
                                                             ((float) (size) / (float) (sizeof(int))));
                     long num2Indirect = ceilf(divisionResult);
-                    prinf("numIndirect in I3 %d\n", num2Indirect);
 
-                    currentDataBlock = orderI3Blocks(1, num2Indirect, (size/sizeof(int)), numBlocks, currentDataBlock, &currentInode->i3block, dataBlockPtr, size, outputPtr);
+                    long otherDivisionResult = ((float) numBlocks) / (((float) (size) / (float) (sizeof(int))));
+                    long numIndirect = ceilf(otherDivisionResult);
+                    prinf("num2Indirect in I3 %d\n", num2Indirect);
+
+                    currentDataBlock = orderI3Blocks(1, num2Indirect, numIndirect, numBlocks, currentDataBlock, &currentInode->i3block, dataBlockPtr, size, outputPtr);
 
                 } else {
                     // last one is an error, since cannot use more than I3BLOCKS...
