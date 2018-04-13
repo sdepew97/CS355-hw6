@@ -182,7 +182,7 @@ boolean defragment(char *inputFile) {
                     divisionResult = ((float) numBlocks) / ((float) (size) / (float) (sizeof(int)));
                     long numIndirect = ceilf(divisionResult);
 
-                    printf("numIndirect in I2 %d\n", numIndirect);
+                    printf("numIndirect in I2 %ld\n", numIndirect);
                     currentDataBlock = orderI2Blocks(1, numIndirect, numBlocks, currentDataBlock,
                                                      &currentInode->i2block, dataBlockPtr, size, outputPtr);
 
@@ -216,9 +216,9 @@ boolean defragment(char *inputFile) {
 
                     float otherDivisionResult = (float) ((float) numBlocks) / (((float) (size) / (float) (sizeof(int))));
                     long numIndirect = ceilf(otherDivisionResult);
-                    printf("num2Indirect in I3 %d\n", num2Indirect);
+                    printf("num2Indirect in I3 %ld\n", num2Indirect);
 
-                    printf("num blocks **** %d\n", numBlocks);
+                    printf("num blocks **** %ld\n", numBlocks);
 
                     currentDataBlock = orderI3Blocks(1, num2Indirect, numIndirect, numBlocks, currentDataBlock, &currentInode->i3block, dataBlockPtr, size, outputPtr);
 
@@ -243,14 +243,14 @@ boolean defragment(char *inputFile) {
         ((block *) (allOfInputFile + SIZEOFSUPERBLOCK + SIZEOFBOOTBLOCK + ((superblockPtr->swap_offset - 1) *size)))->next = -1; //set value for last block
 
         //Write new superblock and inode region, as well as free list to file
-//        fseek(outputPtr, SIZEOFBOOTBLOCK, SEEK_SET);
-//        fwrite(superblockPtr, SIZEOFSUPERBLOCK, 1, outputPtr);
-//        fseek(outputPtr, SIZEOFBOOTBLOCK + SIZEOFSUPERBLOCK, SEEK_SET);
-//        fwrite(((void *) superblockPtr + SIZEOFSUPERBLOCK), (superblockPtr->inode_offset * size), 1, outputPtr);
-//        fseek(outputPtr, SIZEOFBOOTBLOCK + SIZEOFSUPERBLOCK + (superblockPtr->inode_offset * size), SEEK_SET);
-//        fwrite(((void *) superblockPtr + SIZEOFSUPERBLOCK + superblockPtr->inode_offset * size), (superblockPtr->data_offset - superblockPtr->inode_offset) * size, 1, outputPtr);
-//        fseek(outputPtr, SIZEOFBOOTBLOCK + SIZEOFSUPERBLOCK + (superblockPtr->data_offset * size) + (currentDataBlock * size), SEEK_SET);
-//        fwrite((dataBlockPtr + (currentDataBlock * size)), (superblockPtr->swap_offset - superblockPtr->data_offset - currentDataBlock) * size, 1, outputPtr);
+        fseek(outputPtr, SIZEOFBOOTBLOCK, SEEK_SET);
+        fwrite(superblockPtr, SIZEOFSUPERBLOCK, 1, outputPtr);
+        fseek(outputPtr, SIZEOFBOOTBLOCK + SIZEOFSUPERBLOCK, SEEK_SET);
+        fwrite(((void *) superblockPtr + SIZEOFSUPERBLOCK), (superblockPtr->inode_offset * size), 1, outputPtr);
+        fseek(outputPtr, SIZEOFBOOTBLOCK + SIZEOFSUPERBLOCK + (superblockPtr->inode_offset * size), SEEK_SET);
+        fwrite(((void *) superblockPtr + SIZEOFSUPERBLOCK + superblockPtr->inode_offset * size), (superblockPtr->data_offset - superblockPtr->inode_offset) * size, 1, outputPtr);
+        fseek(outputPtr, SIZEOFBOOTBLOCK + SIZEOFSUPERBLOCK + (superblockPtr->data_offset * size) + (currentDataBlock * size), SEEK_SET);
+        fwrite((dataBlockPtr + (currentDataBlock * size)), (superblockPtr->swap_offset - superblockPtr->data_offset - currentDataBlock) * size, 1, outputPtr);
 
         fclose(filePtr);
         fclose(outputPtr);
@@ -288,6 +288,8 @@ boolean defragment(char *inputFile) {
 //        printf("head of free list %d\n", superblockPtr->free_block);
 //        printDataBlocks(dataBlockPtr, size, superblockPtr->data_offset, superblockPtr->swap_offset);
 /*
+        //TODO: change ints to longs and change to floats if needed!
+
         //TODO: not going to work until blocks are output to file correctly!!!
         //TODO: remove at the end
         //open and read both files into memory for debugging purposes...
@@ -374,7 +376,6 @@ long orderDBlocks(int numToWrite, long nodeLocation, int *offsets, void *dataPtr
     return nodeLocationValue;
 }
 
-//TODO: check today in office hours this is correct! (no, got better idea)
 /*
  * Method returns updated current node location with location of where to put next node! (-1 if failure)
  */
@@ -401,7 +402,7 @@ long orderIBlocks(int numToWriteIBlock, int numToWriteData, long nodeLocation, i
         }
 
         offsets[i] = nodeLocationValue;
-//        fwrite(currentIBlock, size, 1, outputFile);
+        fwrite(currentIBlock, size, 1, outputFile);
         nodeLocationValue++;
     }
 
@@ -437,7 +438,7 @@ long orderI2Blocks(int numToWriteI2Block, int numToWriteIBlock, int numToWriteDa
         }
 
         offsets[i] = nodeLocationValue;
-//        fwrite(currentI2Block, size, 1, outputFile);
+        fwrite(currentI2Block, size, 1, outputFile);
         nodeLocationValue++;
     }
 
@@ -480,9 +481,9 @@ long orderI3Blocks(int numToWriteI3Block, int numToWriteI2Block, int numToWriteI
         }
 
         offsets[i] = nodeLocationValue;
-//        fwrite(currentI3Block, size, 1, outputFile);
+        fwrite(currentI3Block, size, 1, outputFile);
         nodeLocationValue++;
-        printf("node location value %d\n", nodeLocationValue);
+        printf("node location value %ld\n", nodeLocationValue);
     }
 
     return nodeLocationValue;
