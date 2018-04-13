@@ -77,7 +77,6 @@ boolean defragment(char *inputFile) {
     char *writingFlag = "wb";
     char *defragExtension = "-defrag\0";
     char *inputFileName = strdup(inputFile); //TODO: free memory at the end!!!
-    char *outputFileName = "NewDataBlocks\0";
     char *outputFinalFileName = malloc(strlen(inputFile) + strlen(defragExtension) + 1);
     strcpy(outputFinalFileName, inputFile);
     strcat(outputFinalFileName, defragExtension);
@@ -128,7 +127,7 @@ boolean defragment(char *inputFile) {
         //print inodes and data blocks prior to reorganization...
         //TODO: remove debugging information at end!
         printf("head of inode list %d\n", superblockPtr->free_inode);
-        printInodes(inodePtr, dataBlockPtr, size, superblockPtr->inode_offset, superblockPtr->data_offset);
+//        printInodes(inodePtr, dataBlockPtr, size, superblockPtr->inode_offset, superblockPtr->data_offset);
         printf("head of free list %d\n", superblockPtr->free_block);
         printf("swap offset %d\n", superblockPtr->swap_offset);
 //        printDataBlocks(dataBlockPtr, size, superblockPtr->data_offset, superblockPtr->swap_offset);
@@ -231,7 +230,7 @@ boolean defragment(char *inputFile) {
         printf("Final Print\n");
         printf("head of inode list %d\n", superblockPtr->free_inode);
         printf("value of currentDataBlock %ld\n", currentDataBlock);
-        printInodes(inodePtr, dataBlockPtr, size, superblockPtr->inode_offset, superblockPtr->data_offset);
+//        printInodes(inodePtr, dataBlockPtr, size, superblockPtr->inode_offset, superblockPtr->data_offset);
         printf("head of free list %d\n", superblockPtr->free_block);
 //        printDataBlocks(dataBlockPtr, size, superblockPtr->data_offset, superblockPtr->swap_offset);
 
@@ -346,7 +345,6 @@ long orderIBlocks(int numToWriteIBlock, int numToWriteData, long nodeLocation, i
             numToWrite -= maxArray;
         }
 
-//        fwrite(currentIBlock, size, 1, outputFile);
         offsets[i] = nodeLocationValue;
         fwrite(currentIBlock, size, 1, outputFile);
         nodeLocationValue++;
