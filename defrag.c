@@ -126,11 +126,14 @@ boolean defragment(char *inputFile) {
 
         //print inodes and data blocks prior to reorganization...
         //TODO: remove debugging information at end!
-        printf("head of inode list %d\n", superblockPtr->free_inode);
+        printf("********Super Block Information********\n");
         printf("size of block %d\n", superblockPtr->size);
-        printInodes(inodePtr, dataBlockPtr, size, superblockPtr->inode_offset, superblockPtr->data_offset);
-        printf("head of free list %d\n", superblockPtr->free_block);
+        printf("inode offset %d\n", superblockPtr->inode_offset);
+        printf("data offset %d\n", superblockPtr->data_offset);
         printf("swap offset %d\n", superblockPtr->swap_offset);
+        printf("head of inode list %d\n", superblockPtr->free_inode);
+        printf("head of free list %d\n", superblockPtr->free_block);
+        printInodes(inodePtr, dataBlockPtr, size, superblockPtr->inode_offset, superblockPtr->data_offset);
 //        printDataBlocks(dataBlockPtr, size, superblockPtr->data_offset, superblockPtr->swap_offset);
 
         long currentDataBlock = 0; //start the counter that keeps track of the data blocks that are being reorganized...
@@ -282,7 +285,13 @@ boolean defragment(char *inputFile) {
         //print inodes and data blocks prior to reorganization..., output swap region, and make free list, again
         //TODO: build free list, here with currentDataBlock as the head of the list!
         printf("Final Print\n");
+        printf("********Super Block Information********\n");
+        printf("size of block %d\n", superblockPtr->size);
+        printf("inode offset %d\n", superblockPtr->inode_offset);
+        printf("data offset %d\n", superblockPtr->data_offset);
+        printf("swap offset %d\n", superblockPtr->swap_offset);
         printf("head of inode list %d\n", superblockPtr->free_inode);
+        printf("head of free list %d\n", superblockPtr->free_block);
 //        printf("value of currentDataBlock %ld\n", currentDataBlock);
 //        printInodes(inodePtr, dataBlockPtr, size, superblockPtr->inode_offset, superblockPtr->data_offset);
 //        printf("head of free list %d\n", superblockPtr->free_block);
