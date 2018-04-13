@@ -373,10 +373,10 @@ void printInodes(inode *startInodeRegion, void *startOfDataRegion, int blockSize
         }
         for(int k=0; k<N_IBLOCKS; k++) {
             printf("iblock: %d, contents %d\n", k, currentInode->iblocks[k]);
-//            for(int l=0; l<(blockSize/sizeof(int)); l++) {
-//                currentDataBlock = (startOfDataRegion + currentInode->iblocks[k] * blockSize);
-//                printf("\t index: %d\n", currentDataBlock[l]);
-//            }
+            for(int l=0; l<(blockSize/sizeof(int)); l++) {
+                currentDataBlock = (startOfDataRegion + currentInode->iblocks[k] * blockSize);
+                printf("\t index: %d\n", currentDataBlock[l]);
+            }
         }
         printf("i2block %d\n", currentInode->i2block);
         printf("i3block %d\n", currentInode->i3block);
