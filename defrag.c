@@ -119,10 +119,10 @@ boolean defragment(char *inputFile) {
         void *dataBlockPtr = (((void *) allOfInputFile) + dataBlockOffsetInFile);
 
         //write bootblock, superblock, and inode blocks to file
-//        fwrite(bootBlockPtr, SIZEOFBOOTBLOCK, 1, outputPtr);
-//        fwrite(superblockPtr, SIZEOFSUPERBLOCK, 1, outputPtr);
-//        fwrite(((void *) superblockPtr + SIZEOFSUPERBLOCK), (superblockPtr->inode_offset * size), 1, outputPtr);
-//        fwrite(((void *) superblockPtr + SIZEOFSUPERBLOCK + superblockPtr->inode_offset * size), (superblockPtr->data_offset - superblockPtr->inode_offset) * size, 1, outputPtr);
+        fwrite(bootBlockPtr, SIZEOFBOOTBLOCK, 1, outputPtr);
+        fwrite(superblockPtr, SIZEOFSUPERBLOCK, 1, outputPtr);
+        fwrite(((void *) superblockPtr + SIZEOFSUPERBLOCK), (superblockPtr->inode_offset * size), 1, outputPtr);
+        fwrite(((void *) superblockPtr + SIZEOFSUPERBLOCK + superblockPtr->inode_offset * size), (superblockPtr->data_offset - superblockPtr->inode_offset) * size, 1, outputPtr);
 
         //print inodes and data blocks prior to reorganization...
         //TODO: remove debugging information at end!
