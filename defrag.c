@@ -152,8 +152,9 @@ boolean defragment(char *inputFile) {
         fwrite(((void *) superblockPtr + SIZEOFSUPERBLOCK), (superblockPtr->inode_offset * size), 1, outputPtr); //write any gaps between inode region and superblock
         fwrite(((void *) superblockPtr + SIZEOFSUPERBLOCK + superblockPtr->inode_offset * size), (superblockPtr->data_offset - superblockPtr->inode_offset) * size, 1, outputPtr);
 
+
+#ifdef DEBUG
         //print inodes and data blocks prior to reorganization...
-        //TODO: remove debugging information at end!
         printf("********Super Block Information********\n");
         printf("size of block %d\n", superblockPtr->size);
         printf("inode offset %d\n", superblockPtr->inode_offset);
@@ -162,7 +163,8 @@ boolean defragment(char *inputFile) {
         printf("head of inode list %d\n", superblockPtr->free_inode);
         printf("head of free list %d\n", superblockPtr->free_block);
         printInodes(inodePtr, dataBlockPtr, size, superblockPtr->inode_offset, superblockPtr->data_offset);
-//        printDataBlocks(dataBlockPtr, size, superblockPtr->data_offset, superblockPtr->swap_offset);
+        printDataBlocks(dataBlockPtr, size, superblockPtr->data_offset, superblockPtr->swap_offset);
+#endif
 
         //TODO: organize from here, down
         long currentDataBlock = 0; //start the counter that keeps track of the data blocks that are being reorganized...
@@ -283,15 +285,14 @@ boolean defragment(char *inputFile) {
         fwrite(((void *) superblockPtr + SIZEOFSUPERBLOCK + superblockPtr->inode_offset * size), (superblockPtr->data_offset - superblockPtr->inode_offset) * size, 1, outputPtr);
         fseek(outputPtr, SIZEOFBOOTBLOCK + SIZEOFSUPERBLOCK + (superblockPtr->data_offset * size) + (currentDataBlock * size), SEEK_SET);
         fwrite((dataBlockPtr + (currentDataBlock * size)), (superblockPtr->swap_offset - superblockPtr->data_offset - currentDataBlock) * size, 1, outputPtr);
-        //TODO: copy swap region!
+        //TODO: copy swap region! (if there is any...swap offset to end of file)
 
         fclose(filePtr);
         fclose(outputPtr);
-        free(allOfInputFile);
 
+#ifdef DEBUG
         //TESTING...
-        //TODO: remove once done testing
-        //TODO: free here!
+        free(allOfInputFile);
         filePtr = fopen(outputFinalFileName, readingFlag);
 
         //Read new disk image into memory //TODO: add a max here
@@ -322,10 +323,10 @@ boolean defragment(char *inputFile) {
         printf("swap offset %d\n", superblockPtr->swap_offset);
         printf("head of inode list %d\n", superblockPtr->free_inode);
         printf("head of free list %d\n", superblockPtr->free_block);
-//        printf("value of currentDataBlock %ld\n", currentDataBlock);
-//        printInodes(inodePtr, dataBlockPtr, size, superblockPtr->inode_offset, superblockPtr->data_offset);
-//        printf("head of free list %d\n", superblockPtr->free_block);
-//        printDataBlocks(dataBlockPtr, size, superblockPtr->data_offset, superblockPtr->swap_offset);
+        printf("value of currentDataBlock %ld\n", currentDataBlock);
+        printInodes(inodePtr, dataBlockPtr, size, superblockPtr->inode_offset, superblockPtr->data_offset);
+        printf("head of free list %d\n", superblockPtr->free_block);
+        printDataBlocks(dataBlockPtr, size, superblockPtr->data_offset, superblockPtr->swap_offset);
 ///*
         //TODO: change ints to longs and change to floats if needed!
 
@@ -376,10 +377,11 @@ boolean defragment(char *inputFile) {
 
         outputIFile(oldInodePtr, newInodePtr, size, dataBlockOld, dataBlockNew, "old 18\0", "new 18\0");
 //*/
-//        free(allOfOldFile);
-//        free(allOfNewFile);
+        free(allOfOldFile);
+        free(allOfNewFile);
 
         //END OF TESTING
+#endif
 
         //TODO: finish freeing memory
         free(allOfInputFile);
