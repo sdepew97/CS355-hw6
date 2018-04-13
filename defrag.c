@@ -197,8 +197,7 @@ boolean defragment(char *inputFile) {
                     printf("numIndirect: %ld\n", numIndirect);
                     currentDataBlock = orderIBlocks(numIndirect, numBlocks, currentDataBlock, currentInode->iblocks,
                                                     dataBlockPtr, size, outputPtr);
-                } //TODO: check if this works!
-                else if (currentInode->size > IBLOCKS && currentInode->size <= I2BLOCKS) {
+                } else if (currentInode->size > IBLOCKS && currentInode->size <= I2BLOCKS) {
                     float divisionResult = (float) currentInode->size / (float) size;
                     long numBlocks = ceilf(divisionResult); //number of blocks used, total (take ceiling)
 
@@ -216,11 +215,11 @@ boolean defragment(char *inputFile) {
                     divisionResult = ((float) numBlocks) / ((float) (size) / (float) (sizeof(int)));
                     long numIndirect = ceilf(divisionResult);
 
+#ifdef DEBUG
                     printf("numIndirect in I2 %ld\n", numIndirect);
+#endif
                     currentDataBlock = orderI2Blocks(1, numIndirect, numBlocks, currentDataBlock,
                                                      &currentInode->i2block, dataBlockPtr, size, outputPtr);
-
-                    //TODO: implement this one once other one is working
                 }
                 else if (currentInode->size > I2BLOCKS && currentInode->size <= I3BLOCKS) {
                     //TODO: implement this one once other one is working
@@ -384,8 +383,6 @@ boolean defragment(char *inputFile) {
 
         //END OF TESTING
 #endif
-
-        //TODO: finish freeing memory
         free(allOfInputFile);
         free(inputFileName);
         free(outputFinalFileName);
@@ -418,7 +415,7 @@ long orderDBlocks(int numToWrite, long nodeLocation, int *offsets, void *dataPtr
 }
 
 /*
- * Method returns updated current node location with location of where to put next node! (-1 if failure)
+ * Method returns updated current node location with location of where to put next node!
  */
 long orderIBlocks(int numToWriteIBlock, int numToWriteData, long nodeLocation, int *offsets, void *dataPtr, int size, FILE *outputFile) {
     long nodeLocationValue = nodeLocation;
@@ -451,7 +448,7 @@ long orderIBlocks(int numToWriteIBlock, int numToWriteData, long nodeLocation, i
 }
 
 /*
- *
+ * Method to order I2 blocks
  */
 long orderI2Blocks(int numToWriteI2Block, int numToWriteIBlock, int numToWriteData, long nodeLocation, int *offsets, void *dataPtr, int size, FILE *outputFile) {
     long nodeLocationValue = nodeLocation;
@@ -486,7 +483,9 @@ long orderI2Blocks(int numToWriteI2Block, int numToWriteIBlock, int numToWriteDa
     return nodeLocationValue;
 }
 
-
+/*
+ * Method to order I3 blocks
+ */
 long orderI3Blocks(int numToWriteI3Block, int numToWriteI2Block, int numToWriteIBlock, int numToWriteData, long nodeLocation, int *offsets, void *dataPtr, int size, FILE *outputFile) {
     long nodeLocationValue = nodeLocation;
     long maxArray = size / sizeof(int);
