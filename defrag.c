@@ -475,7 +475,7 @@ void outputIFile(inode *fileToOutputOriginal, inode *fileToOutputNew, int size, 
     //calculate number of blocks total and number of indirect layers required to get those blocks...
     divisionResult = ((float) numBlocks) / ((float) (size) / (float) (sizeof(int)));
     numIndirect = ceilf(divisionResult);
-    printIBlocks(numIndirect, numBlocks, fileToOutputNew->iblocks, dataRegionOld, size, newOutput); //TODO: figure out why this is broken for new output file!! :/
+    printIBlocks(numIndirect, numBlocks, fileToOutputNew->iblocks, dataRegionNew, size, newOutput); //TODO: figure out why this is broken for new output file!! :/
 
     free(outputOldFileName);
     free(outputNewFileName);
