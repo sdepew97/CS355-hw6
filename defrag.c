@@ -128,10 +128,10 @@ boolean defragment(char *inputFile) {
         //print inodes and data blocks prior to reorganization...
         //TODO: remove debugging information at end!
         printf("head of inode list %d\n", superblockPtr->free_inode);
-        printInodes(inodePtr, size, superblockPtr->inode_offset, superblockPtr->data_offset);
+//        printInodes(inodePtr, size, superblockPtr->inode_offset, superblockPtr->data_offset);
         printf("head of free list %d\n", superblockPtr->free_block);
         printf("swap offset %d\n", superblockPtr->swap_offset);
-//        printDataBlocks(dataBlockPtr, size, superblockPtr->data_offset, superblockPtr->swap_offset);
+        printDataBlocks(dataBlockPtr, size, superblockPtr->data_offset, superblockPtr->swap_offset);
 
         long currentDataBlock = 0; //start the counter that keeps track of the data blocks that are being reorganized...
         inode *currentInode = inodePtr;
@@ -160,6 +160,7 @@ boolean defragment(char *inputFile) {
                     //calculate number of blocks total and number of indirect layers required to get those blocks...
                     divisionResult = ((float) numBlocks) / ((float) (size) / (float) (sizeof(int)));
                     long numIndirect = ceilf(divisionResult);
+//                    dataBlockPtr = dataBlockPtr;
                     printf("numIndirect: %ld\n", numIndirect);
                     currentDataBlock = orderIBlocks(numIndirect, numBlocks, currentDataBlock, currentInode->iblocks,
                                                     dataBlockPtr, size, outputPtr);
@@ -230,7 +231,7 @@ boolean defragment(char *inputFile) {
         printf("Final Print\n");
         printf("head of inode list %d\n", superblockPtr->free_inode);
         printf("value of currentDataBlock %ld\n", currentDataBlock);
-        printInodes(inodePtr, size, superblockPtr->inode_offset, superblockPtr->data_offset);
+//        printInodes(inodePtr, size, superblockPtr->inode_offset, superblockPtr->data_offset);
         printf("head of free list %d\n", superblockPtr->free_block);
         printDataBlocks(dataBlockPtr, size, superblockPtr->data_offset, superblockPtr->swap_offset);
 
@@ -309,7 +310,7 @@ long orderDBlocks(int numToWrite, long nodeLocation, int *offsets, void *dataPtr
     long nodeLocationValue = nodeLocation;
 
     for (int i = 0; i < numToWrite; i++) {
-        void *dataBlock = (dataPtr + offsets[i] * size); //TODO: check computation
+        void *dataBlock = (dataPtr + (offsets[i] * size)); //TODO: check computation
         //dataBlock is now pointing to the data block to move (put in current node location and set array value accordingly)
         fwrite(dataBlock, size, 1, outputFile);
         offsets[i] = nodeLocationValue;
@@ -334,7 +335,7 @@ long orderIBlocks(int numToWriteIBlock, int numToWriteData, long nodeLocation, i
         //write out indirect block to file
         currentIBlockOffsetsValue = (dataPtr + (offsets[i] * size));
         offsets[i] = nodeLocationValue;
-        fwrite(currentIBlockOffsetsValue, size, 1, outputFile);
+//        fwrite(currentIBlockOffsetsValue, size, 1, outputFile);
         nodeLocationValue++;
 
         //write out data blocks to file
@@ -346,6 +347,8 @@ long orderIBlocks(int numToWriteIBlock, int numToWriteData, long nodeLocation, i
             nodeLocationValue = orderDBlocks(numToWrite, nodeLocationValue, (int *) currentIBlockOffsetsValue, dataPtr,
                                              size, outputFile);
         }
+
+        fwrite(currentIBlockOffsetsValue, size, 1, outputFile);
     }
 
     return nodeLocationValue;
@@ -419,7 +422,7 @@ void printIBlocks(int numToWriteIBlock, int numToWriteData, int *offsets, void *
  * Error checking method //TODO: write to allow for indirect files!
  */
 void outputDFile(inode *fileToOutputOriginal, inode *fileToOutputNew, int size, void *dataRegionOld, void *dataRegionNew, char *oldOutputName, char *newOutputName) {
-    char *writingFlag = "wb+\0";
+    char *writingFlag = "wb";
     char *outputOldFileName = strdup(oldOutputName); //TODO: free at the end!!!
     char *outputNewFileName = strdup(newOutputName); //TODO: free at the end!!!
 
@@ -446,7 +449,7 @@ void outputDFile(inode *fileToOutputOriginal, inode *fileToOutputNew, int size, 
 }
 
 void outputIFile(inode *fileToOutputOriginal, inode *fileToOutputNew, int size, void *dataRegionOld, void *dataRegionNew, char *oldOutputName, char *newOutputName) {
-    char *writingFlag = "wb+\0";
+    char *writingFlag = "wb";
     char *outputOldFileName = strdup(oldOutputName); //TODO: free at the end!!!
     char *outputNewFileName = strdup(newOutputName); //TODO: free at the end!!!
 
