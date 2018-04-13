@@ -337,15 +337,15 @@ long orderIBlocks(int numToWriteIBlock, int numToWriteData, long nodeLocation, i
         fwrite(currentIBlockOffsetsValue, size, 1, outputFile);
         nodeLocationValue++;
 
-//        //write out data blocks to file
-//        if (numToWrite > maxArray) {
-//            nodeLocationValue = orderDBlocks(maxArray, nodeLocationValue, (int *) currentIBlockOffsetsValue, dataPtr,
-//                                             size, outputFile);
-//            numToWrite -= maxArray;
-//        } else {
-//            nodeLocationValue = orderDBlocks(numToWrite, nodeLocationValue, (int *) currentIBlockOffsetsValue, dataPtr,
-//                                             size, outputFile);
-//        }
+        //write out data blocks to file
+        if (numToWrite > maxArray) {
+            nodeLocationValue = orderDBlocks(maxArray, nodeLocationValue, (int *) currentIBlockOffsetsValue, dataPtr,
+                                             size, outputFile);
+            numToWrite -= maxArray;
+        } else {
+            nodeLocationValue = orderDBlocks(numToWrite, nodeLocationValue, (int *) currentIBlockOffsetsValue, dataPtr,
+                                             size, outputFile);
+        }
     }
 
     return nodeLocationValue;
@@ -457,7 +457,7 @@ void outputIFile(inode *fileToOutputOriginal, inode *fileToOutputNew, int size, 
     //read and output old file's data blocks
     float divisionResult = (float) fileToOutputOriginal->size / (float) size;
     long numBlocks = ceilf(divisionResult); //number of blocks used, total (take ceiling)
-    printDBlocks(N_DBLOCKS, fileToOutputOriginal->dblocks, dataRegionOld, size, oldOutput);
+//    printDBlocks(N_DBLOCKS, fileToOutputOriginal->dblocks, dataRegionOld, size, oldOutput);
     numBlocks -= 10;
 
     //calculate number of blocks total and number of indirect layers required to get those blocks...
@@ -469,13 +469,13 @@ void outputIFile(inode *fileToOutputOriginal, inode *fileToOutputNew, int size, 
 
     divisionResult = (float) fileToOutputNew->size / (float) size;
     numBlocks = ceilf(divisionResult); //number of blocks used, total (take ceiling)
-    printDBlocks(N_DBLOCKS, fileToOutputNew->dblocks, dataRegionNew, size, newOutput);
+//    printDBlocks(N_DBLOCKS, fileToOutputNew->dblocks, dataRegionNew, size, newOutput);
     numBlocks -= 10;
 
     //calculate number of blocks total and number of indirect layers required to get those blocks...
     divisionResult = ((float) numBlocks) / ((float) (size) / (float) (sizeof(int)));
     numIndirect = ceilf(divisionResult);
-//    printIBlocks(numIndirect, numBlocks, fileToOutputNew->iblocks, dataRegionOld, size, newOutput); //TODO: figure out why this is broken for new output file!! :/
+    printIBlocks(numIndirect, numBlocks, fileToOutputNew->iblocks, dataRegionOld, size, newOutput); //TODO: figure out why this is broken for new output file!! :/
 
     free(outputOldFileName);
     free(outputNewFileName);
