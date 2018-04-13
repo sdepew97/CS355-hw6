@@ -334,9 +334,6 @@ long orderIBlocks(int numToWriteIBlock, int numToWriteData, long nodeLocation, i
     for (int i = 0; i < numToWriteIBlock; i++) {
         //write out indirect block to file
         currentIBlock = (dataPtr + (offsets[i] * size));
-        offsets[i] = nodeLocationValue;
-//        fwrite(currentIBlockOffsetsValue, size, 1, outputFile);
-        nodeLocationValue++;
 
         //write out data blocks to file
         if (numToWrite > maxArray) {
@@ -349,7 +346,10 @@ long orderIBlocks(int numToWriteIBlock, int numToWriteData, long nodeLocation, i
             numToWrite -= maxArray;
         }
 
+//        fwrite(currentIBlock, size, 1, outputFile);
+        offsets[i] = nodeLocationValue;
         fwrite(currentIBlock, size, 1, outputFile);
+        nodeLocationValue++;
     }
 
     return nodeLocationValue;
