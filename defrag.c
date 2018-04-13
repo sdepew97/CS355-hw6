@@ -127,7 +127,7 @@ boolean defragment(char *inputFile) {
         //print inodes and data blocks prior to reorganization...
         //TODO: remove debugging information at end!
         printf("head of inode list %d\n", superblockPtr->free_inode);
-//        printInodes(inodePtr, dataBlockPtr, size, superblockPtr->inode_offset, superblockPtr->data_offset);
+        printInodes(inodePtr, dataBlockPtr, size, superblockPtr->inode_offset, superblockPtr->data_offset);
         printf("head of free list %d\n", superblockPtr->free_block);
         printf("swap offset %d\n", superblockPtr->swap_offset);
 //        printDataBlocks(dataBlockPtr, size, superblockPtr->data_offset, superblockPtr->swap_offset);
@@ -175,21 +175,23 @@ boolean defragment(char *inputFile) {
                     currentDataBlock = orderIBlocks(N_IBLOCKS, N_DBLOCKS, currentDataBlock, currentInode->iblocks,
                                                     dataBlockPtr,
                                                     size, outputPtr);
+
                     numBlocks -= N_IBLOCKS * (size / sizeof(int));
 
                     //calculate number of indirect blocks needed
                     divisionResult = ((float) numBlocks) / ((float) (size) / (float) (sizeof(int)));
                     long numIndirect = ceilf(divisionResult);
 
-                    prinf("numIndirect in I2 %d\n", numIndirect);
+                    printf("numIndirect in I2 %d\n", numIndirect);
                     currentDataBlock = orderI2Blocks(1, numIndirect, numBlocks, currentDataBlock,
                                                      &currentInode->i2block, dataBlockPtr, size, outputPtr);
 
                     //TODO: implement this one once other one is working
-                } else if (currentInode->size > I2BLOCKS && currentInode->size <= I3BLOCKS) {
+                }
+                /*else if (currentInode->size > I2BLOCKS && currentInode->size <= I3BLOCKS) {
 //                    currentDataBlock = orderDBlocks(currentDataBlock, &inodePtr, dataBlockOffsetInFile, size, filePtr, outputPtr);
                     //TODO: implement this one once other one is working
-                } else { //last one is an error, since cannot use more than I3BLOCKS...
+
                     float divisionResult = (float) currentInode->size / (float) size;
                     long numBlocks = ceilf(divisionResult); //number of blocks used, total (take ceiling)
 
@@ -216,6 +218,8 @@ boolean defragment(char *inputFile) {
 
                     currentDataBlock = orderI3Blocks(1, num2Indirect, (size/sizeof(int)), numBlocks, currentDataBlock, &currentInode->i3block, dataBlockPtr, size, outputPtr);
 
+                } */else {
+                    // last one is an error, since cannot use more than I3BLOCKS...
                 }
             }
 
@@ -402,17 +406,28 @@ long orderIBlocks(int numToWriteIBlock, int numToWriteData, long nodeLocation, i
  */
 long orderI2Blocks(int numToWriteI2Block, int numToWriteIBlock, int numToWriteData, long nodeLocation, int *offsets, void *dataPtr, int size, FILE *outputFile) {
     long nodeLocationValue = nodeLocation;
+    long maxArray = size/sizeof(int);
     void *currentI2Block;
 
     int numToWrite = numToWriteData;
+    int numToWriteIBlockValue = numToWriteIBlock;
 
     for (int i = 0; i < numToWriteI2Block; i++) {
         //write out indirect block to file
         currentI2Block = (dataPtr + (offsets[i] * size));
 
         //write out data blocks to file
-        nodeLocationValue = orderIBlocks(numToWriteIBlock, numToWriteData, (int *) currentI2Block, dataPtr,
-                                         size, outputFile);
+        if(numToWriteIBlockValue > maxArray) {
+            nodeLocationValue = orderIBlocks(maxArray, numToWrite, nodeLocationValue, (int *) currentI2Block, dataPtr, size, outputFile);
+
+            numToWriteData -= maxArray*maxArray;
+            numToWriteIBlockValue -= maxArray;
+        } else {
+            nodeLocationValue = orderIBlocks(numToWriteIBlockValue, numToWrite, nodeLocationValue, (int *) currentI2Block, dataPtr, size, outputFile);
+
+            numToWriteData -= maxArray*maxArray;
+            numToWriteIBlockValue -= maxArray;
+        }
 
         offsets[i] = nodeLocationValue;
         fwrite(currentI2Block, size, 1, outputFile);
@@ -422,20 +437,40 @@ long orderI2Blocks(int numToWriteI2Block, int numToWriteIBlock, int numToWriteDa
     return nodeLocationValue;
 }
 
+/*
 long orderI3Blocks(int numToWriteI3Block, int numToWriteI2Block, int numToWriteIBlock, int numToWriteData, long nodeLocation, int *offsets, void *dataPtr, int size, FILE *outputFile) {
     long nodeLocationValue = nodeLocation;
+    long maxArray = size / sizeof(int);
     void *currentI3Block;
 
     int numToWrite = numToWriteData;
+    int numToWriteIBlockValue = numToWriteIBlock;
+    int numToWriteI2BlockValue = numToWriteI2Block;
 
     for (int i = 0; i < numToWriteI3Block; i++) {
         //write out indirect block to file
         currentI3Block = (dataPtr + (offsets[i] * size));
 
         //write out data blocks to file
-        nodeLocationValue = orderI2Blocks(numToWriteI2Block, numToWriteIBlock, numToWriteData, (int *) currentI3Block,
-                                          dataPtr,
-                                          size, outputFile);
+        if (numToWriteI2BlockValue > maxArray) {
+            nodeLocationValue = orderI2Blocks(maxArray, numToWriteIBlockValue, numToWrite,
+                                              (int *) currentI3Block,
+                                              dataPtr,
+                                              size, outputFile);
+
+            numToWriteI2BlockValue -= maxArray;
+            numToWriteIBlockValue -= maxArray * maxArray;
+            numToWrite -= maxArray * maxArray * maxArray;
+        } else {
+            nodeLocationValue = orderI2Blocks(numToWriteI2Block, numToWriteIBlockValue, numToWrite,
+                                              (int *) currentI3Block,
+                                              dataPtr,
+                                              size, outputFile);
+
+            numToWriteI2BlockValue -= maxArray;
+            numToWriteIBlockValue -= maxArray * maxArray;
+            numToWrite -= maxArray * maxArray * maxArray;
+        }
 
         offsets[i] = nodeLocationValue;
         fwrite(currentI3Block, size, 1, outputFile);
@@ -444,6 +479,7 @@ long orderI3Blocks(int numToWriteI3Block, int numToWriteI2Block, int numToWriteI
 
     return nodeLocationValue;
 }
+ */
 
 long offsetBytes(int blockSize, int offset) {
     return (SIZEOFBOOTBLOCK + SIZEOFSUPERBLOCK + blockSize * offset);
