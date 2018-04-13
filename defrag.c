@@ -277,10 +277,10 @@ boolean defragment(char *inputFile) {
         //TODO: also see if works with pointer from new data file
         outputDFile(oldInodePtr, newInodePtr, size, dataBlockOld, dataBlockNew, "old 17\0", "new 17\0");
 
-        oldInodePtr = allOfOldFile + SIZEOFSUPERBLOCK + SIZEOFBOOTBLOCK + superblockPtr->inode_offset * size + 10 * sizeof(inode);
-        newInodePtr = allOfNewFile + SIZEOFSUPERBLOCK + SIZEOFBOOTBLOCK + superblockPtr->inode_offset * size + 10 * sizeof(inode);
+        oldInodePtr = allOfOldFile + SIZEOFSUPERBLOCK + SIZEOFBOOTBLOCK + superblockPtr->inode_offset * size + 11 * sizeof(inode);
+        newInodePtr = allOfNewFile + SIZEOFSUPERBLOCK + SIZEOFBOOTBLOCK + superblockPtr->inode_offset * size + 11 * sizeof(inode);
 
-        outputIFile(oldInodePtr, newInodePtr, size, dataBlockOld, dataBlockNew, "old 10\0", "new 10\0");
+        outputIFile(oldInodePtr, newInodePtr, size, dataBlockOld, dataBlockNew, "old 11\0", "new 11\0");
 
         //END OF TESTING
 
