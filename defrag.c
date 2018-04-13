@@ -466,7 +466,7 @@ void outputIFile(inode *fileToOutputOriginal, inode *fileToOutputNew, int size, 
     //read and output old file's data blocks
     float divisionResult = (float) fileToOutputOriginal->size / (float) size;
     long numBlocks = ceilf(divisionResult); //number of blocks used, total (take ceiling)
-//    printDBlocks(N_DBLOCKS, fileToOutputOriginal->dblocks, dataRegionOld, size, oldOutput);
+    printDBlocks(N_DBLOCKS, fileToOutputOriginal->dblocks, dataRegionOld, size, oldOutput);
     numBlocks -= 10;
 
     //calculate number of blocks total and number of indirect layers required to get those blocks...
@@ -478,7 +478,7 @@ void outputIFile(inode *fileToOutputOriginal, inode *fileToOutputNew, int size, 
 
     divisionResult = (float) fileToOutputNew->size / (float) size;
     numBlocks = ceilf(divisionResult); //number of blocks used, total (take ceiling)
-//    printDBlocks(N_DBLOCKS, fileToOutputNew->dblocks, dataRegionNew, size, newOutput);
+    printDBlocks(N_DBLOCKS, fileToOutputNew->dblocks, dataRegionNew, size, newOutput);
     numBlocks -= 10;
 
     //calculate number of blocks total and number of indirect layers required to get those blocks...
