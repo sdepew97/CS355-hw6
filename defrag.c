@@ -154,7 +154,7 @@ boolean defragment(char *inputFile) {
 
                     currentDataBlock = orderDBlocks(N_DBLOCKS, currentDataBlock, currentInode->dblocks, dataBlockPtr,
                                                     size, outputPtr);
-                    numBlocks -= 10;
+                    numBlocks -= N_DBLOCKS;
 
                     //calculate number of blocks total and number of indirect layers required to get those blocks...
                     divisionResult = ((float) numBlocks) / ((float) (size) / (float) (sizeof(int)));
@@ -165,12 +165,56 @@ boolean defragment(char *inputFile) {
                                                     dataBlockPtr, size, outputPtr);
                 } //TODO: check if this works!
                 else if (currentInode->size > IBLOCKS && currentInode->size <= I2BLOCKS) {
-//                    currentDataBlock = orderDBlocks(currentDataBlock, &inodePtr, dataBlockOffsetInFile, size, filePtr, outputPtr);
+                    float divisionResult = (float) currentInode->size / (float) size;
+                    long numBlocks = ceilf(divisionResult); //number of blocks used, total (take ceiling)
+
+                    currentDataBlock = orderDBlocks(N_DBLOCKS, currentDataBlock, currentInode->dblocks, dataBlockPtr,
+                                                    size, outputPtr);
+                    numBlocks -= N_DBLOCKS;
+
+                    currentDataBlock = orderIBlocks(N_IBLOCKS, N_DBLOCKS, currentDataBlock, currentInode->iblocks,
+                                                    dataBlockPtr,
+                                                    size, outputPtr);
+                    numBlocks -= N_IBLOCKS * (size / sizeof(int));
+
+                    //calculate number of indirect blocks needed
+                    divisionResult = ((float) numBlocks) / ((float) (size) / (float) (sizeof(int)));
+                    long numIndirect = ceilf(divisionResult);
+
+                    prinf("numIndirect in I2 %d\n", numIndirect);
+                    currentDataBlock = orderI2Blocks(1, numIndirect, numBlocks, currentDataBlock,
+                                                     &currentInode->i2block, dataBlockPtr, size, outputPtr);
+
                     //TODO: implement this one once other one is working
                 } else if (currentInode->size > I2BLOCKS && currentInode->size <= I3BLOCKS) {
 //                    currentDataBlock = orderDBlocks(currentDataBlock, &inodePtr, dataBlockOffsetInFile, size, filePtr, outputPtr);
                     //TODO: implement this one once other one is working
                 } else { //last one is an error, since cannot use more than I3BLOCKS...
+                    float divisionResult = (float) currentInode->size / (float) size;
+                    long numBlocks = ceilf(divisionResult); //number of blocks used, total (take ceiling)
+
+                    currentDataBlock = orderDBlocks(N_DBLOCKS, currentDataBlock, currentInode->dblocks, dataBlockPtr,
+                                                    size, outputPtr);
+                    numBlocks -= N_DBLOCKS;
+
+                    currentDataBlock = orderIBlocks(N_IBLOCKS, N_DBLOCKS, currentDataBlock, currentInode->iblocks,
+                                                    dataBlockPtr,
+                                                    size, outputPtr);
+
+                    numBlocks -= N_IBLOCKS * (size / sizeof(int));
+
+                    currentDataBlock = orderI2Blocks(1, (size / sizeof(int)), numBlocks, currentDataBlock,
+                                                     &currentInode->i2block, dataBlockPtr, size, outputPtr);
+
+                    numBlocks -= (size / sizeof(int)) * (size / sizeof(int));
+
+                    //calculate number of indirect blocks needed
+                    divisionResult = ((float) numBlocks) / (((float) (size) / (float) (sizeof(int))) *
+                                                            ((float) (size) / (float) (sizeof(int))));
+                    long num2Indirect = ceilf(divisionResult);
+                    prinf("numIndirect in I3 %d\n", num2Indirect);
+
+                    currentDataBlock = orderI3Blocks(1, num2Indirect, (size/sizeof(int)), numBlocks, currentDataBlock, &currentInode->i3block, dataBlockPtr, size, outputPtr);
 
                 }
             }
@@ -347,6 +391,54 @@ long orderIBlocks(int numToWriteIBlock, int numToWriteData, long nodeLocation, i
 
         offsets[i] = nodeLocationValue;
         fwrite(currentIBlock, size, 1, outputFile);
+        nodeLocationValue++;
+    }
+
+    return nodeLocationValue;
+}
+
+/*
+ *
+ */
+long orderI2Blocks(int numToWriteI2Block, int numToWriteIBlock, int numToWriteData, long nodeLocation, int *offsets, void *dataPtr, int size, FILE *outputFile) {
+    long nodeLocationValue = nodeLocation;
+    void *currentI2Block;
+
+    int numToWrite = numToWriteData;
+
+    for (int i = 0; i < numToWriteI2Block; i++) {
+        //write out indirect block to file
+        currentI2Block = (dataPtr + (offsets[i] * size));
+
+        //write out data blocks to file
+        nodeLocationValue = orderIBlocks(numToWriteIBlock, numToWriteData, (int *) currentI2Block, dataPtr,
+                                         size, outputFile);
+
+        offsets[i] = nodeLocationValue;
+        fwrite(currentI2Block, size, 1, outputFile);
+        nodeLocationValue++;
+    }
+
+    return nodeLocationValue;
+}
+
+long orderI3Blocks(int numToWriteI3Block, int numToWriteI2Block, int numToWriteIBlock, int numToWriteData, long nodeLocation, int *offsets, void *dataPtr, int size, FILE *outputFile) {
+    long nodeLocationValue = nodeLocation;
+    void *currentI3Block;
+
+    int numToWrite = numToWriteData;
+
+    for (int i = 0; i < numToWriteI3Block; i++) {
+        //write out indirect block to file
+        currentI3Block = (dataPtr + (offsets[i] * size));
+
+        //write out data blocks to file
+        nodeLocationValue = orderI2Blocks(numToWriteI2Block, numToWriteIBlock, numToWriteData, (int *) currentI3Block,
+                                          dataPtr,
+                                          size, outputFile);
+
+        offsets[i] = nodeLocationValue;
+        fwrite(currentI3Block, size, 1, outputFile);
         nodeLocationValue++;
     }
 
