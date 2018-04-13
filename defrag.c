@@ -20,8 +20,9 @@ int main(int argc, char *argv[]) {
         } else if (returnVal == help) {
             printManPage();
         } else {
-            //TODO: check if de-fragmentation succeeded!
-            defragment(argv[1]);
+            if(defragment(argv[1]) != TRUE) {
+              perror("An error occured while defragmenting the disk.\n");
+            }
         }
     } else {
         //if there are fewer than or more than two arguments to the command line, an error message with how to run the program should print
