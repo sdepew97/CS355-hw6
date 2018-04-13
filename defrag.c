@@ -160,7 +160,6 @@ boolean defragment(char *inputFile) {
                     //calculate number of blocks total and number of indirect layers required to get those blocks...
                     divisionResult = ((float) numBlocks) / ((float) (size) / (float) (sizeof(int)));
                     long numIndirect = ceilf(divisionResult);
-//                    dataBlockPtr = dataBlockPtr;
                     printf("numIndirect: %ld\n", numIndirect);
                     currentDataBlock = orderIBlocks(numIndirect, numBlocks, currentDataBlock, currentInode->iblocks,
                                                     dataBlockPtr, size, outputPtr);
@@ -189,8 +188,7 @@ boolean defragment(char *inputFile) {
 
                     //TODO: implement this one once other one is working
                 }
-//                else if (currentInode->size > I2BLOCKS && currentInode->size <= I3BLOCKS) {
-                 else {
+                else if (currentInode->size > I2BLOCKS && currentInode->size <= I3BLOCKS) {
                     //TODO: implement this one once other one is working
 
                     float divisionResult = (float) currentInode->size / (float) size;
@@ -224,7 +222,7 @@ boolean defragment(char *inputFile) {
 
                     currentDataBlock = orderI3Blocks(1, num2Indirect, numIndirect, numBlocks, currentDataBlock, &currentInode->i3block, dataBlockPtr, size, outputPtr);
 
-//                } else {
+                } else {
                     // last one is an error, since cannot use more than I3BLOCKS...
                 }
             }
