@@ -379,6 +379,8 @@ boolean defragment(char *inputFile) {
 //*/
         free(allOfOldFile);
         free(allOfNewFile);
+        fclose(filePtr);
+        fclose(outputPtr);
 
         //END OF TESTING
 #endif
@@ -387,9 +389,6 @@ boolean defragment(char *inputFile) {
         free(allOfInputFile);
         free(inputFileName);
         free(outputFinalFileName);
-
-        fclose(filePtr);
-        fclose(outputPtr);
 
         return TRUE; //TODO: remove once not debugging...
     } else {
