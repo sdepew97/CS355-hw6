@@ -118,6 +118,7 @@ boolean defragment(char *inputFile) {
             return FALSE;
         }
 
+        printf("%d\n", fread(allOfInputFile, inputFileSize, 1, filePtr));
         if(fread(allOfInputFile, inputFileSize, 1, filePtr) < inputFileSize) {
             perror("Error reading in disk image.\n");
             return FALSE;
