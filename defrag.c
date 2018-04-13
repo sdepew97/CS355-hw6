@@ -188,7 +188,7 @@ boolean defragment(char *inputFile) {
 
                     //TODO: implement this one once other one is working
                 }
-                /*else if (currentInode->size > I2BLOCKS && currentInode->size <= I3BLOCKS) {
+                else if (currentInode->size > I2BLOCKS && currentInode->size <= I3BLOCKS) {
 //                    currentDataBlock = orderDBlocks(currentDataBlock, &inodePtr, dataBlockOffsetInFile, size, filePtr, outputPtr);
                     //TODO: implement this one once other one is working
 
@@ -218,7 +218,7 @@ boolean defragment(char *inputFile) {
 
                     currentDataBlock = orderI3Blocks(1, num2Indirect, (size/sizeof(int)), numBlocks, currentDataBlock, &currentInode->i3block, dataBlockPtr, size, outputPtr);
 
-                } */else {
+                } else {
                     // last one is an error, since cannot use more than I3BLOCKS...
                 }
             }
