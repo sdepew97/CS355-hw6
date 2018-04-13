@@ -269,18 +269,18 @@ boolean defragment(char *inputFile) {
         }
         fread(allOfNewFile, newFileSize, 1, outputPtr); //TODO: recognize here if read was over maximum allowed size!
 
-        inode *oldInodePtr = allOfOldFile + SIZEOFSUPERBLOCK + SIZEOFBOOTBLOCK + superblockPtr->inode_offset * size + 15 * sizeof(inode);
-        inode *newInodePtr = allOfNewFile + SIZEOFSUPERBLOCK + SIZEOFBOOTBLOCK + superblockPtr->inode_offset * size + 15 * sizeof(inode);
+        inode *oldInodePtr = allOfOldFile + SIZEOFSUPERBLOCK + SIZEOFBOOTBLOCK + superblockPtr->inode_offset * size + 16 * sizeof(inode);
+        inode *newInodePtr = allOfNewFile + SIZEOFSUPERBLOCK + SIZEOFBOOTBLOCK + superblockPtr->inode_offset * size + 16 * sizeof(inode);
         void *dataBlockOld = allOfOldFile + SIZEOFSUPERBLOCK + SIZEOFBOOTBLOCK + superblockPtr->data_offset * size;
         void *dataBlockNew = allOfNewFile + SIZEOFSUPERBLOCK + SIZEOFBOOTBLOCK + superblockPtr->data_offset * size;
 
         //TODO: also see if works with pointer from new data file
-        outputDFile(oldInodePtr, newInodePtr, size, dataBlockOld, dataBlockNew, "old 15\0", "new 15\0");
+        outputDFile(oldInodePtr, newInodePtr, size, dataBlockOld, dataBlockNew, "old 16\0", "new 16\0");
 
-        oldInodePtr = allOfOldFile + SIZEOFSUPERBLOCK + SIZEOFBOOTBLOCK + superblockPtr->inode_offset * size + 4 * sizeof(inode);
-        newInodePtr = allOfNewFile + SIZEOFSUPERBLOCK + SIZEOFBOOTBLOCK + superblockPtr->inode_offset * size + 4 * sizeof(inode);
+        oldInodePtr = allOfOldFile + SIZEOFSUPERBLOCK + SIZEOFBOOTBLOCK + superblockPtr->inode_offset * size + 5 * sizeof(inode);
+        newInodePtr = allOfNewFile + SIZEOFSUPERBLOCK + SIZEOFBOOTBLOCK + superblockPtr->inode_offset * size + 5 * sizeof(inode);
 
-        outputIFile(oldInodePtr, newInodePtr, size, dataBlockOld, dataBlockNew, "old 4\0", "new 4\0");
+        outputIFile(oldInodePtr, newInodePtr, size, dataBlockOld, dataBlockNew, "old 5\0", "new 5\0");
 
         //END OF TESTING
 
