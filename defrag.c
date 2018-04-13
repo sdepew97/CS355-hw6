@@ -292,7 +292,7 @@ boolean defragment(char *inputFile) {
         oldInodePtr = allOfOldFile + SIZEOFSUPERBLOCK + SIZEOFBOOTBLOCK + superblockPtr->inode_offset * size + 0 * sizeof(inode);
         newInodePtr = allOfNewFile + SIZEOFSUPERBLOCK + SIZEOFBOOTBLOCK + superblockPtr->inode_offset * size + 0 * sizeof(inode);
 
-//        outputIFile(oldInodePtr, newInodePtr, size, dataBlockOld, dataBlockNew, "old 0\0", "new 0\0");
+        outputIFile(oldInodePtr, newInodePtr, size, dataBlockOld, dataBlockNew, "old 0\0", "new 0\0");
 
         //TODO: finish freeing memory
         free(allOfInputFile);
@@ -493,84 +493,3 @@ void outputIFile(inode *fileToOutputOriginal, inode *fileToOutputNew, int size, 
     fclose(oldOutput);
     fclose(newOutput);
 }
-
-
-/*
- *   float divisionResult = (float) currentInode->size / (float) size;
-                    long numBlocks = ceilf(divisionResult); //number of blocks used, total (take ceiling)
-
-                    currentDataBlock = orderDBlocks(N_DBLOCKS, currentDataBlock, currentInode->dblocks, dataBlockPtr,
-                                                    size, outputPtr);
-                    numBlocks -= 10;
-
-                    //calculate number of blocks total and number of indirect layers required to get those blocks...
-                    divisionResult = ((float) numBlocks) / ((float) (size) / (float) (sizeof(int)));
-                    long numIndirect = ceilf(divisionResult);
-                    printf("numIndirect: %ld\n", numIndirect);
-                    currentDataBlock = orderIBlocks(numIndirect, numBlocks, currentDataBlock, currentInode->iblocks,
-                                                    dataBlockPtr, size, outputPtr);
- */
-
-/*
- *   outputPtr = fopen(outputFileName, readingFlag);
-        //TODO: clean this up! (A LOT!!!)
-        char *outputMiddleFileName = "Middle\0"; //TODO: free at the end!!!
-        void *blockToOutput;
-
-        //File opening
-        FILE *middleOutput = fopen(outputMiddleFileName, writingFlag);
-        //File reading into memory
-        fseek(outputPtr, 0L, SEEK_END);
-        long middleFileSize = ftell(outputPtr);
-        rewind(outputPtr);
-        printf("Number bytes in file output: %ld\n", middleFileSize);
-        void *allOfMiddleFile = malloc(middleFileSize); //TODO: free this at the end!
-        if (allOfMiddleFile == NULL) {
-            //malloc failed
-            perror("Malloc failed.\n");
-            return FALSE;
-        }
-
-        fread(allOfMiddleFile, middleFileSize, 1, outputPtr); //TODO: recognize here if read was over maximum allowed size!
-
-        blockToOutput = allOfMiddleFile + SIZEOFBOOTBLOCK + SIZEOFSUPERBLOCK + ((superblockPtr->data_offset - superblockPtr->inode_offset) * size) + 623 * size;
-        fwrite(blockToOutput, size, 1, middleOutput);
-
-        fclose(outputPtr);
-
-
-        //open and read both files into memory for debugging purposes...
-        filePtr = fopen(inputFileName, readingFlag);
-        outputPtr = fopen(outputFinalFileName, readingFlag);
-
-        //File reading into memory
-        fseek(filePtr, 0L, SEEK_END);
-        long oldFileSize = ftell(filePtr);
-        rewind(filePtr);
-        printf("Number bytes in file: %ld\n", oldFileSize);
-        void *allOfOldFile = malloc(oldFileSize); //TODO: free this at the end!
-        if (allOfOldFile == NULL) {
-            //malloc failed
-            perror("Malloc failed.\n");
-            return FALSE;
-        }
-        fread(allOfOldFile, oldFileSize, 1, filePtr); //TODO: recognize here if read was over maximum allowed size!
-
-        fseek(outputPtr, 0L, SEEK_END);
-        long newFileSize = ftell(outputPtr);
-        rewind(outputPtr);
-        printf("Number bytes in file: %ld\n", newFileSize);
-        void *allOfNewFile = malloc(newFileSize); //TODO: free this at the end!
-        if (allOfNewFile == NULL) {
-            //malloc failed
-            perror("Malloc failed.\n");
-            return FALSE;
-        }
-        fread(allOfNewFile, newFileSize, 1, outputPtr); //TODO: recognize here if read was over maximum allowed size!
-
-        inode *oldInodePtr = allOfOldFile + SIZEOFSUPERBLOCK + SIZEOFBOOTBLOCK + superblockPtr->inode_offset + 3 * sizeof(inode);
-        inode *newInodePtr = allOfNewFile + SIZEOFSUPERBLOCK + SIZEOFBOOTBLOCK + superblockPtr->inode_offset + 3 * sizeof(inode);
-        newDataRegion = allOfNewFile + offsetBytes(size, superblockPtr->data_offset);
-
-        outputFile(oldInodePtr, newInodePtr, size, dataBlockPtr, newDataRegion, "old 3\0", "new 3\0");
- */
