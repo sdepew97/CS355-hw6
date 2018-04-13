@@ -73,8 +73,8 @@ int parseCmd(int argc, char *argv[]) {
 
 boolean defragment(char *inputFile) {
     //File naming setup
-    char *readingFlag = "rb+\0";
-    char *writingFlag = "wb+\0";
+    char *readingFlag = "rb";
+    char *writingFlag = "wb";
     char *defragExtension = "-defrag\0";
     char *inputFileName = strdup(inputFile); //TODO: free memory at the end!!!
     char *outputFileName = "NewDataBlocks\0";
@@ -166,10 +166,10 @@ boolean defragment(char *inputFile) {
                 } //TODO: check if this works!
                 else if (currentInode->size > IBLOCKS && currentInode->size <= I2BLOCKS) {
 //                    currentDataBlock = orderDBlocks(currentDataBlock, &inodePtr, dataBlockOffsetInFile, size, filePtr, outputPtr);
-                    //TODO: implement this one
+                    //TODO: implement this one once other one is working
                 } else if (currentInode->size > I2BLOCKS && currentInode->size <= I3BLOCKS) {
 //                    currentDataBlock = orderDBlocks(currentDataBlock, &inodePtr, dataBlockOffsetInFile, size, filePtr, outputPtr);
-                    //TODO: implement this one
+                    //TODO: implement this one once other one is working
                 } else { //last one is an error, since cannot use more than I3BLOCKS...
 
                 }
@@ -179,13 +179,10 @@ boolean defragment(char *inputFile) {
             currentInode = ((void *) currentInode) + sizeof(inode);
         }
 
-        //TODO: tie together free inodes list!!!!
-
-        int valueToTransfer;
-
         //assemble the free list of inodes and write to file
+        int valueToTransfer;
         superblockPtr->free_block = currentDataBlock;
-        for(int i=currentDataBlock; i<(superblockPtr->swap_offset - superblockPtr->data_offset); i++) { //TODO: update and fix!! (check output correct)
+        for(int i=currentDataBlock; i<(superblockPtr->swap_offset - superblockPtr->data_offset); i++) {
             valueToTransfer = i + 1;
             ((block *) (allOfInputFile + SIZEOFBOOTBLOCK + SIZEOFSUPERBLOCK + ((superblockPtr->data_offset + i) *size)))->next = valueToTransfer;
         }
@@ -201,9 +198,6 @@ boolean defragment(char *inputFile) {
         fseek(outputPtr, SIZEOFBOOTBLOCK + SIZEOFSUPERBLOCK + (superblockPtr->data_offset * size) + (currentDataBlock * size), SEEK_SET);
         fwrite((dataBlockPtr + (currentDataBlock * size)), (superblockPtr->swap_offset - superblockPtr->data_offset - currentDataBlock) * size, 1, outputPtr);
 
-        //TODO: add swap region and add free blocks, here
-
-        //TODO: close files once done! and remove error checking, here! REMOVE MIDDLE FILE!
         fclose(filePtr);
         fclose(outputPtr);
         free(allOfInputFile);
@@ -286,7 +280,7 @@ boolean defragment(char *inputFile) {
         oldInodePtr = allOfOldFile + SIZEOFSUPERBLOCK + SIZEOFBOOTBLOCK + superblockPtr->inode_offset * size + 0 * sizeof(inode);
         newInodePtr = allOfNewFile + SIZEOFSUPERBLOCK + SIZEOFBOOTBLOCK + superblockPtr->inode_offset * size + 0 * sizeof(inode);
 
-//        outputIFile(oldInodePtr, newInodePtr, size, dataBlockOld, dataBlockNew, "old 0\0", "new 0\0");
+        outputIFile(oldInodePtr, newInodePtr, size, dataBlockOld, dataBlockNew, "old 0\0", "new 0\0");
 
         //END OF TESTING
 
@@ -342,17 +336,17 @@ long orderIBlocks(int numToWriteIBlock, int numToWriteData, long nodeLocation, i
         currentIBlockOffsetsValue = (dataPtr + (offsets[i] * size));
         offsets[i] = nodeLocationValue;
         fwrite(currentIBlockOffsetsValue, size, 1, outputFile);
-        nodeLocationValue++; //TODO: did this fix it??
+        nodeLocationValue++;
 
-        //write out data blocks to file
-        if (numToWrite > maxArray) {
-            nodeLocationValue = orderDBlocks(maxArray, nodeLocationValue, (int *) currentIBlockOffsetsValue, dataPtr,
-                                             size, outputFile);
-            numToWrite -= maxArray;
-        } else {
-            nodeLocationValue = orderDBlocks(numToWrite, nodeLocationValue, (int *) currentIBlockOffsetsValue, dataPtr,
-                                             size, outputFile);
-        }
+//        //write out data blocks to file
+//        if (numToWrite > maxArray) {
+//            nodeLocationValue = orderDBlocks(maxArray, nodeLocationValue, (int *) currentIBlockOffsetsValue, dataPtr,
+//                                             size, outputFile);
+//            numToWrite -= maxArray;
+//        } else {
+//            nodeLocationValue = orderDBlocks(numToWrite, nodeLocationValue, (int *) currentIBlockOffsetsValue, dataPtr,
+//                                             size, outputFile);
+//        }
     }
 
     return nodeLocationValue;
@@ -470,7 +464,7 @@ void outputIFile(inode *fileToOutputOriginal, inode *fileToOutputNew, int size, 
     //calculate number of blocks total and number of indirect layers required to get those blocks...
     divisionResult = ((float) numBlocks) / ((float) (size) / (float) (sizeof(int)));
     long numIndirect = ceilf(divisionResult);
-    printIBlocks(numIndirect, numBlocks, fileToOutputOriginal->iblocks, dataRegionOld, size, oldOutput);
+//    printIBlocks(numIndirect, numBlocks, fileToOutputOriginal->iblocks, dataRegionOld, size, oldOutput);
 
     //read and output new file's data blocks
 
@@ -482,7 +476,7 @@ void outputIFile(inode *fileToOutputOriginal, inode *fileToOutputNew, int size, 
     //calculate number of blocks total and number of indirect layers required to get those blocks...
     divisionResult = ((float) numBlocks) / ((float) (size) / (float) (sizeof(int)));
     numIndirect = ceilf(divisionResult);
-    printIBlocks(numIndirect, numBlocks, fileToOutputNew->iblocks, dataRegionNew, size, newOutput);
+//    printIBlocks(numIndirect, numBlocks, fileToOutputNew->iblocks, dataRegionOld, size, newOutput); //TODO: figure out why this is broken for new output file!! :/
 
     free(outputOldFileName);
     free(outputNewFileName);
