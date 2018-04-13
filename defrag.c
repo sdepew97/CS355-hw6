@@ -119,10 +119,10 @@ boolean defragment(char *inputFile) {
         void *dataBlockPtr = (((void *) allOfInputFile) + dataBlockOffsetInFile);
 
         //write bootblock, superblock, and inode blocks to file
-        fwrite(bootBlockPtr, SIZEOFBOOTBLOCK, 1, outputPtr);
-        fwrite(superblockPtr, SIZEOFSUPERBLOCK, 1, outputPtr);
-        fwrite(((void *) superblockPtr + SIZEOFSUPERBLOCK), (superblockPtr->inode_offset * size), 1, outputPtr);
-        fwrite(((void *) superblockPtr + SIZEOFSUPERBLOCK + superblockPtr->inode_offset * size), (superblockPtr->data_offset - superblockPtr->inode_offset) * size, 1, outputPtr);
+//        fwrite(bootBlockPtr, SIZEOFBOOTBLOCK, 1, outputPtr);
+//        fwrite(superblockPtr, SIZEOFSUPERBLOCK, 1, outputPtr);
+//        fwrite(((void *) superblockPtr + SIZEOFSUPERBLOCK), (superblockPtr->inode_offset * size), 1, outputPtr);
+//        fwrite(((void *) superblockPtr + SIZEOFSUPERBLOCK + superblockPtr->inode_offset * size), (superblockPtr->data_offset - superblockPtr->inode_offset) * size, 1, outputPtr);
 
         //print inodes and data blocks prior to reorganization...
         //TODO: remove debugging information at end!
@@ -237,14 +237,14 @@ boolean defragment(char *inputFile) {
         ((block *) (allOfInputFile + SIZEOFSUPERBLOCK + SIZEOFBOOTBLOCK + ((superblockPtr->swap_offset - 1) *size)))->next = -1; //set value for last block
 
         //Write new superblock and inode region, as well as free list to file
-        fseek(outputPtr, SIZEOFBOOTBLOCK, SEEK_SET);
-        fwrite(superblockPtr, SIZEOFSUPERBLOCK, 1, outputPtr);
-        fseek(outputPtr, SIZEOFBOOTBLOCK + SIZEOFSUPERBLOCK, SEEK_SET);
-        fwrite(((void *) superblockPtr + SIZEOFSUPERBLOCK), (superblockPtr->inode_offset * size), 1, outputPtr);
-        fseek(outputPtr, SIZEOFBOOTBLOCK + SIZEOFSUPERBLOCK + (superblockPtr->inode_offset * size), SEEK_SET);
-        fwrite(((void *) superblockPtr + SIZEOFSUPERBLOCK + superblockPtr->inode_offset * size), (superblockPtr->data_offset - superblockPtr->inode_offset) * size, 1, outputPtr);
-        fseek(outputPtr, SIZEOFBOOTBLOCK + SIZEOFSUPERBLOCK + (superblockPtr->data_offset * size) + (currentDataBlock * size), SEEK_SET);
-        fwrite((dataBlockPtr + (currentDataBlock * size)), (superblockPtr->swap_offset - superblockPtr->data_offset - currentDataBlock) * size, 1, outputPtr);
+//        fseek(outputPtr, SIZEOFBOOTBLOCK, SEEK_SET);
+//        fwrite(superblockPtr, SIZEOFSUPERBLOCK, 1, outputPtr);
+//        fseek(outputPtr, SIZEOFBOOTBLOCK + SIZEOFSUPERBLOCK, SEEK_SET);
+//        fwrite(((void *) superblockPtr + SIZEOFSUPERBLOCK), (superblockPtr->inode_offset * size), 1, outputPtr);
+//        fseek(outputPtr, SIZEOFBOOTBLOCK + SIZEOFSUPERBLOCK + (superblockPtr->inode_offset * size), SEEK_SET);
+//        fwrite(((void *) superblockPtr + SIZEOFSUPERBLOCK + superblockPtr->inode_offset * size), (superblockPtr->data_offset - superblockPtr->inode_offset) * size, 1, outputPtr);
+//        fseek(outputPtr, SIZEOFBOOTBLOCK + SIZEOFSUPERBLOCK + (superblockPtr->data_offset * size) + (currentDataBlock * size), SEEK_SET);
+//        fwrite((dataBlockPtr + (currentDataBlock * size)), (superblockPtr->swap_offset - superblockPtr->data_offset - currentDataBlock) * size, 1, outputPtr);
 
         fclose(filePtr);
         fclose(outputPtr);
