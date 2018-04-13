@@ -214,7 +214,7 @@ boolean defragment(char *inputFile) {
                                                             ((float) (size) / (float) (sizeof(int))));
                     long num2Indirect = ceilf(divisionResult);
 
-                    float otherDivisionResult = ((float) numBlocks) / (((float) (size) / (float) (sizeof(int))));
+                    float otherDivisionResult = (float) ((float) numBlocks) / (((float) (size) / (float) (sizeof(int))));
                     long numIndirect = ceilf(otherDivisionResult);
                     printf("num2Indirect in I3 %d\n", num2Indirect);
 
