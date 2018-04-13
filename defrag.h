@@ -63,7 +63,7 @@ long offsetBytes(int blockSize, int offset);
 void outputDFile(inode *fileToOutputOriginal, inode *fileToOutputNew, int size, void *dataRegionOld, void *dataRegionNew, char *oldOutputName, char *newOutputName);
 void outputIFile(inode *fileToOutputOriginal, inode *fileToOutputNew, int size, void *dataRegionOld, void *dataRegionNew, char *oldOutputName, char *newOutputName);
 void *getBlock(FILE *inputFile, long offsetValue, long blockSize);
-void printInodes(inode *startInodeRegion, int blockSize, int inodeOffset, int dataOffset);
+void printInodes(inode *startInodeRegion, void *startOfDataRegion, int blockSize, int inodeOffset, int dataOffset);
 void printDBlocks(int numToWrite, int *offsets, void *dataPtr, int size, FILE *outputFile);
 void printIBlocks(int numToWriteIBlock, int numToWriteData, int *offsets, void *dataPtr, int size, FILE *outputFile);
 void printDataBlocks(void *startDataRegion, int blockSize, int dataOffset, int swapOffset);

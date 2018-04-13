@@ -128,10 +128,10 @@ boolean defragment(char *inputFile) {
         //print inodes and data blocks prior to reorganization...
         //TODO: remove debugging information at end!
         printf("head of inode list %d\n", superblockPtr->free_inode);
-//        printInodes(inodePtr, size, superblockPtr->inode_offset, superblockPtr->data_offset);
+        printInodes(inodePtr, dataBlockPtr, size, superblockPtr->inode_offset, superblockPtr->data_offset);
         printf("head of free list %d\n", superblockPtr->free_block);
         printf("swap offset %d\n", superblockPtr->swap_offset);
-        printDataBlocks(dataBlockPtr, size, superblockPtr->data_offset, superblockPtr->swap_offset);
+//        printDataBlocks(dataBlockPtr, size, superblockPtr->data_offset, superblockPtr->swap_offset);
 
         long currentDataBlock = 0; //start the counter that keeps track of the data blocks that are being reorganized...
         inode *currentInode = inodePtr;
@@ -231,9 +231,9 @@ boolean defragment(char *inputFile) {
         printf("Final Print\n");
         printf("head of inode list %d\n", superblockPtr->free_inode);
         printf("value of currentDataBlock %ld\n", currentDataBlock);
-//        printInodes(inodePtr, size, superblockPtr->inode_offset, superblockPtr->data_offset);
+//        printInodes(inodePtr, dataBlockPtr, size, superblockPtr->inode_offset, superblockPtr->data_offset);
         printf("head of free list %d\n", superblockPtr->free_block);
-        printDataBlocks(dataBlockPtr, size, superblockPtr->data_offset, superblockPtr->swap_offset);
+//        printDataBlocks(dataBlockPtr, size, superblockPtr->data_offset, superblockPtr->swap_offset);
 
         //TODO: not going to work until blocks are output to file correctly!!!
         //TODO: remove at the end
@@ -327,28 +327,29 @@ long orderDBlocks(int numToWrite, long nodeLocation, int *offsets, void *dataPtr
 long orderIBlocks(int numToWriteIBlock, int numToWriteData, long nodeLocation, int *offsets, void *dataPtr, int size, FILE *outputFile) {
     long nodeLocationValue = nodeLocation;
     long maxArray = size / sizeof(int);
-    void *currentIBlockOffsetsValue;
+    void *currentIBlock;
 
     int numToWrite = numToWriteData;
 
     for (int i = 0; i < numToWriteIBlock; i++) {
         //write out indirect block to file
-        currentIBlockOffsetsValue = (dataPtr + (offsets[i] * size));
+        currentIBlock = (dataPtr + (offsets[i] * size));
         offsets[i] = nodeLocationValue;
 //        fwrite(currentIBlockOffsetsValue, size, 1, outputFile);
         nodeLocationValue++;
 
         //write out data blocks to file
         if (numToWrite > maxArray) {
-            nodeLocationValue = orderDBlocks(maxArray, nodeLocationValue, (int *) currentIBlockOffsetsValue, dataPtr,
+            nodeLocationValue = orderDBlocks(maxArray, nodeLocationValue, (int *) currentIBlock, dataPtr,
                                              size, outputFile);
             numToWrite -= maxArray;
         } else {
-            nodeLocationValue = orderDBlocks(numToWrite, nodeLocationValue, (int *) currentIBlockOffsetsValue, dataPtr,
+            nodeLocationValue = orderDBlocks(numToWrite, nodeLocationValue, (int *) currentIBlock, dataPtr,
                                              size, outputFile);
+            numToWrite -= maxArray;
         }
 
-        fwrite(currentIBlockOffsetsValue, size, 1, outputFile);
+        fwrite(currentIBlock, size, 1, outputFile);
     }
 
     return nodeLocationValue;
@@ -358,10 +359,11 @@ long offsetBytes(int blockSize, int offset) {
     return (SIZEOFBOOTBLOCK + SIZEOFSUPERBLOCK + blockSize * offset);
 }
 
-void printInodes(inode *startInodeRegion, int blockSize, int inodeOffset, int dataOffset){
+void printInodes(inode *startInodeRegion, void *startOfDataRegion, int blockSize, int inodeOffset, int dataOffset){
     int numInodes = ((dataOffset-inodeOffset) * blockSize)/sizeof(inode);
     printf("number inodes: %d\n", numInodes);
     inode *currentInode = startInodeRegion;
+    int *currentDataBlock;
 
     for(int i=0; i<numInodes; i++){
         printf("inode %d, next inode %d, nlink %d, size %d\n", i, currentInode->next_inode, currentInode->nlink, currentInode->size);
@@ -371,6 +373,10 @@ void printInodes(inode *startInodeRegion, int blockSize, int inodeOffset, int da
         }
         for(int k=0; k<N_IBLOCKS; k++) {
             printf("iblock: %d, contents %d\n", k, currentInode->iblocks[k]);
+            for(int l=0; l<(blockSize/sizeof(int)); l++) {
+                currentDataBlock = (startOfDataRegion + currentInode->iblocks[k] * blockSize);
+                printf("\t index: %d\n", currentDataBlock[l]);
+            }
         }
         printf("i2block %d\n", currentInode->i2block);
         printf("i3block %d\n", currentInode->i3block);
