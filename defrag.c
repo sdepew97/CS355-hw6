@@ -149,13 +149,13 @@ boolean defragment(char *inputFile) {
 
         inode *inodePtr = (((void *) allOfInputFile) + firstNodeOffsetInFile);
         void *dataBlockPtr = (((void *) allOfInputFile) + dataBlockOffsetInFile);
+        void *swapPtr = (((void *) allOfInputFile) + swapBlockOffsetInFile);
 
         //write bootblock, superblock, and inode blocks to file
-//        fwrite(bootBlockPtr, SIZEOFBOOTBLOCK, 1, outputPtr);
-//        fwrite(superblockPtr, SIZEOFSUPERBLOCK, 1, outputPtr);
-//        fwrite(((void *) superblockPtr + SIZEOFSUPERBLOCK), (superblockPtr->inode_offset * size), 1, outputPtr); //write any gaps between inode region and superblock
-//        fwrite(((void *) superblockPtr + SIZEOFSUPERBLOCK + superblockPtr->inode_offset * size), (superblockPtr->data_offset - superblockPtr->inode_offset) * size, 1, outputPtr);
-
+        fwrite(bootBlockPtr, SIZEOFBOOTBLOCK, 1, outputPtr);
+        fwrite(superblockPtr, SIZEOFSUPERBLOCK, 1, outputPtr);
+        fwrite(((void *) superblockPtr + SIZEOFSUPERBLOCK), (superblockPtr->inode_offset * size), 1, outputPtr); //write any gaps between inode region and superblock
+        fwrite(((void *) superblockPtr + SIZEOFSUPERBLOCK + superblockPtr->inode_offset * size), (superblockPtr->data_offset - superblockPtr->inode_offset) * size, 1, outputPtr);
 
 #ifdef DEBUG
         //print inodes and data blocks prior to reorganization...
@@ -253,7 +253,9 @@ boolean defragment(char *inputFile) {
                     float otherDivisionResult = (float) ((float) numBlocks) / (((float) (size) / (float) (sizeof(int))));
                     long numIndirect = ceilf(otherDivisionResult);
 #ifdef DEBUG
+                    printf("value of blocks written so far %ld\n", currentDataBlock);
                     printf("num2Indirect in I3 %ld\n", num2Indirect);
+                    printf("numIdirect in I3 %ld\n", numIndirect);
                     printf("num blocks **** %ld\n", numBlocks);
 #endif
 
@@ -281,16 +283,17 @@ boolean defragment(char *inputFile) {
         }
         ((block *) (allOfInputFile + SIZEOFSUPERBLOCK + SIZEOFBOOTBLOCK + ((superblockPtr->swap_offset - 1) *size)))->next = -1; //set value for last block
 
-        //Write new superblock and inode region, as well as free list to file
-//        fseek(outputPtr, SIZEOFBOOTBLOCK, SEEK_SET);
-//        fwrite(superblockPtr, SIZEOFSUPERBLOCK, 1, outputPtr);
-//        fseek(outputPtr, SIZEOFBOOTBLOCK + SIZEOFSUPERBLOCK, SEEK_SET);
-//        fwrite(((void *) superblockPtr + SIZEOFSUPERBLOCK), (superblockPtr->inode_offset * size), 1, outputPtr);
-//        fseek(outputPtr, SIZEOFBOOTBLOCK + SIZEOFSUPERBLOCK + (superblockPtr->inode_offset * size), SEEK_SET);
-//        fwrite(((void *) superblockPtr + SIZEOFSUPERBLOCK + superblockPtr->inode_offset * size), (superblockPtr->data_offset - superblockPtr->inode_offset) * size, 1, outputPtr);
-//        fseek(outputPtr, SIZEOFBOOTBLOCK + SIZEOFSUPERBLOCK + (superblockPtr->data_offset * size) + (currentDataBlock * size), SEEK_SET);
-//        fwrite((dataBlockPtr + (currentDataBlock * size)), (superblockPtr->swap_offset - superblockPtr->data_offset - currentDataBlock) * size, 1, outputPtr);
-//        //TODO: copy swap region! (if there is any...swap offset to end of file)
+        //Write new superblock and inode region, as well as free list to file and swap region in file
+        fseek(outputPtr, SIZEOFBOOTBLOCK, SEEK_SET);
+        fwrite(superblockPtr, SIZEOFSUPERBLOCK, 1, outputPtr);
+        fseek(outputPtr, SIZEOFBOOTBLOCK + SIZEOFSUPERBLOCK, SEEK_SET);
+        fwrite(((void *) superblockPtr + SIZEOFSUPERBLOCK), (superblockPtr->inode_offset * size), 1, outputPtr);
+        fseek(outputPtr, SIZEOFBOOTBLOCK + SIZEOFSUPERBLOCK + (superblockPtr->inode_offset * size), SEEK_SET);
+        fwrite(((void *) superblockPtr + SIZEOFSUPERBLOCK + superblockPtr->inode_offset * size), (superblockPtr->data_offset - superblockPtr->inode_offset) * size, 1, outputPtr);
+        fseek(outputPtr, SIZEOFBOOTBLOCK + SIZEOFSUPERBLOCK + (superblockPtr->data_offset * size) + (currentDataBlock * size), SEEK_SET);
+        fwrite((dataBlockPtr + (currentDataBlock * size)), (superblockPtr->swap_offset - superblockPtr->data_offset - currentDataBlock) * size, 1, outputPtr);
+        fseek(outputPtr, SIZEOFBOOTBLOCK + SIZEOFSUPERBLOCK + (superblockPtr->swap_offset * size), SEEK_SET);
+        fwrite(swapPtr, inputFileSize - SIZEOFBOOTBLOCK - SIZEOFSUPERBLOCK - (superblockPtr->swap_offset * size), 1, outputPtr);
 
         fclose(filePtr);
         fclose(outputPtr);
@@ -321,14 +324,14 @@ boolean defragment(char *inputFile) {
         //print inodes and data blocks prior to reorganization..., output swap region, and make free list, again
         printf("Final Print\n");
         printf("********Super Block Information********\n");
-//        printf("size of block %d\n", superblockPtr->size);
-//        printf("inode offset %d\n", superblockPtr->inode_offset);
-//        printf("data offset %d\n", superblockPtr->data_offset);
-//        printf("swap offset %d\n", superblockPtr->swap_offset);
-//        printf("head of inode list %d\n", superblockPtr->free_inode);
-//        printf("head of free list %d\n", superblockPtr->free_block);
-//        printf("value of currentDataBlock %ld\n", currentDataBlock);
-//        printInodes(inodePtr, dataBlockPtr, size, superblockPtr->inode_offset, superblockPtr->data_offset);
+        printf("size of block %d\n", superblockPtr->size);
+        printf("inode offset %d\n", superblockPtr->inode_offset);
+        printf("data offset %d\n", superblockPtr->data_offset);
+        printf("swap offset %d\n", superblockPtr->swap_offset);
+        printf("head of inode list %d\n", superblockPtr->free_inode);
+        printf("head of free list %d\n", superblockPtr->free_block);
+        printf("value of currentDataBlock %ld\n", currentDataBlock);
+        printInodes(inodePtr, dataBlockPtr, size, superblockPtr->inode_offset, superblockPtr->data_offset);
 //        printf("head of free list %d\n", superblockPtr->free_block);
 //        printDataBlocks(dataBlockPtr, size, superblockPtr->data_offset, superblockPtr->swap_offset);
 
@@ -373,11 +376,11 @@ boolean defragment(char *inputFile) {
 //        oldInodePtr = allOfOldFile + SIZEOFSUPERBLOCK + SIZEOFBOOTBLOCK + superblockPtr->inode_offset * size + 18 * sizeof(inode);
 //        newInodePtr = allOfNewFile + SIZEOFSUPERBLOCK + SIZEOFBOOTBLOCK + superblockPtr->inode_offset * size + 18 * sizeof(inode);
 //        outputIFile(oldInodePtr, newInodePtr, size, dataBlockOld, dataBlockNew, "old 18\0", "new 18\0");
-//
+
 //        free(allOfOldFile);
 //        free(allOfNewFile);
-//        fclose(filePtr);
-//        fclose(outputPtr);
+        fclose(filePtr);
+        fclose(outputPtr);
 #endif
         //Free memory
         free(allOfInputFile);
@@ -463,12 +466,12 @@ long orderI2Blocks(int numToWriteI2Block, int numToWriteIBlock, int numToWriteDa
         if(numToWriteIBlockValue > maxArray) {
             nodeLocationValue = orderIBlocks(maxArray, numToWrite, nodeLocationValue, (int *) currentI2Block, dataPtr, size, outputFile);
 
-            numToWriteData -= maxArray*maxArray;
+            numToWrite -= maxArray*maxArray;
             numToWriteIBlockValue -= maxArray;
         } else {
             nodeLocationValue = orderIBlocks(numToWriteIBlockValue, numToWrite, nodeLocationValue, (int *) currentI2Block, dataPtr, size, outputFile);
 
-            numToWriteData -= maxArray*maxArray;
+            numToWrite -= maxArray*maxArray;
             numToWriteIBlockValue -= maxArray;
         }
 
@@ -507,7 +510,7 @@ long orderI3Blocks(int numToWriteI3Block, int numToWriteI2Block, int numToWriteI
             numToWriteIBlockValue -= maxArray * maxArray;
             numToWrite -= maxArray * maxArray * maxArray;
         } else {
-            nodeLocationValue = orderI2Blocks(numToWriteI2Block, numToWriteIBlockValue, numToWrite, nodeLocationValue,
+            nodeLocationValue = orderI2Blocks(numToWriteI2BlockValue, numToWriteIBlockValue, numToWrite, nodeLocationValue,
                                               (int *) currentI3Block,
                                               dataPtr,
                                               size, outputFile);
