@@ -15,8 +15,9 @@ How Did I Test:
 * I traced the files from the datafile-frag disk given to us and then traced these files on the defragmented disk image I created and diffed them to check if they were identical
 * I used Ziting's tests and data files to test my code
 
-Parts Not Implemented:
+Parts Not Implemented/Extra Credit:
 * I did not do the max read disk extra credit; rather, I simply printed out a statement to the user if the disk image were too large to keep in memory at a time
+* I am not sure if I can get extra credit for posting the reassembled files for my classmates to use.
 
 How to compile:
 * You can simply type "make"
