@@ -9,6 +9,7 @@ General Design Choices and Assumptions:
 * I assumed that the block size is always divisible by 4 (Dianna said this was reasonable in office hours)
 * I assumed that the swap region could be indivisible by blocks and goes from the end of the data region to the end of the file size
 * I assumed that the data region is filled with blocks from the data offset to the swap offset
+* There is an incorrect warning about the int *currentDataBlock variable
 
 How Did I Test:
 * I compared my disk image output from Dianna's file and Ziting's files and got the same output
