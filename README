@@ -1,7 +1,8 @@
 Name: Sarah Depew
 
 Known Bugs and Limitations:
-* There is a bug with how I am putting together the free list. I am able to put together the free list correctly for the datafile-frag image given to us, but I am not able to put the free list together for Ziting's data disks.
+* There is a bug with how I am putting together the new sorted free list. I am able to put together the free list correctly for the datafile-frag image given to us, but I am not able to put the free list together for Ziting's data disks.
+I am wondering if there is something to do with the swap space being right at the end of the data region; if I had another day, I would investigate this further, but I ran out of time.
 * I think that perhaps I write the swap space incorrectly, but was unable to test that with disk generation.
 * Too, I have not tested on any disks with inode region offset of more than 0, but my code should be written to accommodate this change in disk layout.
 
