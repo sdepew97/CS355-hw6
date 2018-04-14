@@ -336,48 +336,48 @@ boolean defragment(char *inputFile) {
         fclose(filePtr);
 
         //ALSO TESTING...
-        filePtr = fopen(inputFileName, readingFlag);
-        outputPtr = fopen(outputFinalFileName, readingFlag);
-
-        //File reading into memory
-        fseek(filePtr, 0L, SEEK_END);
-        long oldFileSize = ftell(filePtr);
-        rewind(filePtr);
-        printf("Number bytes in old file: %ld\n", oldFileSize);
-        void *allOfOldFile = malloc(oldFileSize);
-        if (allOfOldFile == NULL) {
-            //malloc failed
-            perror("Malloc failed.\n");
-            return FALSE;
-        }
-        fread(allOfOldFile, oldFileSize, 1, filePtr);
-
-        fseek(outputPtr, 0L, SEEK_END);
-        long newFileSize = ftell(outputPtr);
-        rewind(outputPtr);
-        printf("Number bytes in new file: %ld\n", newFileSize);
-        void *allOfNewFile = malloc(newFileSize);
-        if (allOfNewFile == NULL) {
-            //malloc failed
-            perror("Malloc failed.\n");
-            return FALSE;
-        }
-        fread(allOfNewFile, newFileSize, 1, outputPtr);
-
-        inode *oldInodePtr = allOfOldFile + SIZEOFSUPERBLOCK + SIZEOFBOOTBLOCK + superblockPtr->inode_offset * size + 17 * sizeof(inode);
-        inode *newInodePtr = allOfNewFile + SIZEOFSUPERBLOCK + SIZEOFBOOTBLOCK + superblockPtr->inode_offset * size + 17 * sizeof(inode);
-        void *dataBlockOld = allOfOldFile + SIZEOFSUPERBLOCK + SIZEOFBOOTBLOCK + superblockPtr->data_offset * size;
-        void *dataBlockNew = allOfNewFile + SIZEOFSUPERBLOCK + SIZEOFBOOTBLOCK + superblockPtr->data_offset * size;
-        outputDFile(oldInodePtr, newInodePtr, size, dataBlockOld, dataBlockNew, "old 17\0", "new 17\0");
-
-        oldInodePtr = allOfOldFile + SIZEOFSUPERBLOCK + SIZEOFBOOTBLOCK + superblockPtr->inode_offset * size + 18 * sizeof(inode);
-        newInodePtr = allOfNewFile + SIZEOFSUPERBLOCK + SIZEOFBOOTBLOCK + superblockPtr->inode_offset * size + 18 * sizeof(inode);
-        outputIFile(oldInodePtr, newInodePtr, size, dataBlockOld, dataBlockNew, "old 18\0", "new 18\0");
-
-        free(allOfOldFile);
-        free(allOfNewFile);
-        fclose(filePtr);
-        fclose(outputPtr);
+//        filePtr = fopen(inputFileName, readingFlag);
+//        outputPtr = fopen(outputFinalFileName, readingFlag);
+//
+//        //File reading into memory
+//        fseek(filePtr, 0L, SEEK_END);
+//        long oldFileSize = ftell(filePtr);
+//        rewind(filePtr);
+//        printf("Number bytes in old file: %ld\n", oldFileSize);
+//        void *allOfOldFile = malloc(oldFileSize);
+//        if (allOfOldFile == NULL) {
+//            //malloc failed
+//            perror("Malloc failed.\n");
+//            return FALSE;
+//        }
+//        fread(allOfOldFile, oldFileSize, 1, filePtr);
+//
+//        fseek(outputPtr, 0L, SEEK_END);
+//        long newFileSize = ftell(outputPtr);
+//        rewind(outputPtr);
+//        printf("Number bytes in new file: %ld\n", newFileSize);
+//        void *allOfNewFile = malloc(newFileSize);
+//        if (allOfNewFile == NULL) {
+//            //malloc failed
+//            perror("Malloc failed.\n");
+//            return FALSE;
+//        }
+//        fread(allOfNewFile, newFileSize, 1, outputPtr);
+//
+//        inode *oldInodePtr = allOfOldFile + SIZEOFSUPERBLOCK + SIZEOFBOOTBLOCK + superblockPtr->inode_offset * size + 17 * sizeof(inode);
+//        inode *newInodePtr = allOfNewFile + SIZEOFSUPERBLOCK + SIZEOFBOOTBLOCK + superblockPtr->inode_offset * size + 17 * sizeof(inode);
+//        void *dataBlockOld = allOfOldFile + SIZEOFSUPERBLOCK + SIZEOFBOOTBLOCK + superblockPtr->data_offset * size;
+//        void *dataBlockNew = allOfNewFile + SIZEOFSUPERBLOCK + SIZEOFBOOTBLOCK + superblockPtr->data_offset * size;
+//        outputDFile(oldInodePtr, newInodePtr, size, dataBlockOld, dataBlockNew, "old 17\0", "new 17\0");
+//
+//        oldInodePtr = allOfOldFile + SIZEOFSUPERBLOCK + SIZEOFBOOTBLOCK + superblockPtr->inode_offset * size + 18 * sizeof(inode);
+//        newInodePtr = allOfNewFile + SIZEOFSUPERBLOCK + SIZEOFBOOTBLOCK + superblockPtr->inode_offset * size + 18 * sizeof(inode);
+//        outputIFile(oldInodePtr, newInodePtr, size, dataBlockOld, dataBlockNew, "old 18\0", "new 18\0");
+//
+//        free(allOfOldFile);
+//        free(allOfNewFile);
+//        fclose(filePtr);
+//        fclose(outputPtr);
 #endif
         //Free memory
         free(allOfInputFile);
