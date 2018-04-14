@@ -544,7 +544,7 @@ void printInodes(inode *startInodeRegion, void *startOfDataRegion, int blockSize
 
     printf("Number of inodes: %d\n", numInodes);
     inode *currentInode = startInodeRegion;
-//    int *currentDataBlock;
+    int *currentDataBlock;
 
     for(int i=0; i<numInodes; i++){
         printf("inode %d, next inode %d, nlink %d, size %d\n", i, currentInode->next_inode, currentInode->nlink, currentInode->size);
