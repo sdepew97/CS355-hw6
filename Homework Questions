@@ -1,0 +1,34 @@
+Name: Sarah Depew
+Worked with Kellie
+
+Problem 20:
+Elinor is right, since you do not want to get into issues of synchronization when it comes to a file system. You do not want to have multiple copies of a file open at once, since that would leave you open to issues pertaining to state of files and having to update each entry in the array. As a result, having multiple copies of a file in the inode array is a bad idea.
+
+Problem 21:
+A benefit of hard links is that they allow a file to be kept even when the creator deletes it. This is a double-edged sword, but also a guarantee that the user will have the file when needed. However, with soft links, the benefit is now for the owner rather than the user, since the owner can delete the file when desired.
+
+Problem 24:
+The relation between the files and the bitmap is FD < B. We want this to be true in order for a free list to be more efficient than a bitmap. As a result, the condition where a free list uses less space than a bitmap is when F/B < 1/D = 1/16 or 6.25%.
+
+Problem 28:
+UNIX file programs can use the metadata, perhaps in the inodes, where the last time of modification is recorded. Then, the UNIX system can go about the incremental dump like described in class using an inode-indexed array marking which files need to be written out.
+
+Problem 30:
+This would be a good idea for really small files. This would allow for small files to avoid taking up precious data blocks and rather be completely encompassed in an inode.
+
+Problem 40:
+The maximum file size is 10 (direct) + 10 (indirect) + 10*10 (doubly indirect) + 10*10*10 (triply indirect) = 1120 blocks used or 1120*4 = 4480 bytes allowed for a max file.
+
+Problem 41:
+You need to fetch the root inode. (root inode is already in memory, so this doesn't count)
+Fetch the root directory.
+Fetch the usr inode.
+Fetch the user directory.
+Fetch the ast inode.
+Fetch the ast directory.
+Fetch the courses inode.
+Fetch the courses directory.
+Fetch the os inode.
+Fetch the os directory.
+Fetch the handout.t file.
+In all, you need 11 file operations, 10 of which must occur for the file to be read, since the root inode is already in memory.
