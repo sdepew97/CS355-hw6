@@ -437,7 +437,7 @@ long orderIBlocks(int numToWriteIBlock, int numToWriteData, long nodeLocation, i
         }
 
         offsets[i] = nodeLocationValue;
-//        fwrite(currentIBlock, size, 1, outputFile);
+        fwrite(currentIBlock, size, 1, outputFile);
         nodeLocationValue++;
     }
 
@@ -473,7 +473,7 @@ long orderI2Blocks(int numToWriteI2Block, int numToWriteIBlock, int numToWriteDa
         }
 
         offsets[i] = nodeLocationValue;
-//        fwrite(currentI2Block, size, 1, outputFile);
+        fwrite(currentI2Block, size, 1, outputFile);
         nodeLocationValue++;
     }
 
@@ -518,7 +518,7 @@ long orderI3Blocks(int numToWriteI3Block, int numToWriteI2Block, int numToWriteI
         }
 
         offsets[i] = nodeLocationValue;
-//        fwrite(currentI3Block, size, 1, outputFile);
+        fwrite(currentI3Block, size, 1, outputFile);
         nodeLocationValue++;
 
 #ifdef DEBUG
