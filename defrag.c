@@ -151,10 +151,10 @@ boolean defragment(char *inputFile) {
         void *dataBlockPtr = (((void *) allOfInputFile) + dataBlockOffsetInFile);
 
         //write bootblock, superblock, and inode blocks to file
-        fwrite(bootBlockPtr, SIZEOFBOOTBLOCK, 1, outputPtr);
-        fwrite(superblockPtr, SIZEOFSUPERBLOCK, 1, outputPtr);
-        fwrite(((void *) superblockPtr + SIZEOFSUPERBLOCK), (superblockPtr->inode_offset * size), 1, outputPtr); //write any gaps between inode region and superblock
-        fwrite(((void *) superblockPtr + SIZEOFSUPERBLOCK + superblockPtr->inode_offset * size), (superblockPtr->data_offset - superblockPtr->inode_offset) * size, 1, outputPtr);
+//        fwrite(bootBlockPtr, SIZEOFBOOTBLOCK, 1, outputPtr);
+//        fwrite(superblockPtr, SIZEOFSUPERBLOCK, 1, outputPtr);
+//        fwrite(((void *) superblockPtr + SIZEOFSUPERBLOCK), (superblockPtr->inode_offset * size), 1, outputPtr); //write any gaps between inode region and superblock
+//        fwrite(((void *) superblockPtr + SIZEOFSUPERBLOCK + superblockPtr->inode_offset * size), (superblockPtr->data_offset - superblockPtr->inode_offset) * size, 1, outputPtr);
 
 
 #ifdef DEBUG
@@ -282,15 +282,15 @@ boolean defragment(char *inputFile) {
         ((block *) (allOfInputFile + SIZEOFSUPERBLOCK + SIZEOFBOOTBLOCK + ((superblockPtr->swap_offset - 1) *size)))->next = -1; //set value for last block
 
         //Write new superblock and inode region, as well as free list to file
-        fseek(outputPtr, SIZEOFBOOTBLOCK, SEEK_SET);
-        fwrite(superblockPtr, SIZEOFSUPERBLOCK, 1, outputPtr);
-        fseek(outputPtr, SIZEOFBOOTBLOCK + SIZEOFSUPERBLOCK, SEEK_SET);
-        fwrite(((void *) superblockPtr + SIZEOFSUPERBLOCK), (superblockPtr->inode_offset * size), 1, outputPtr);
-        fseek(outputPtr, SIZEOFBOOTBLOCK + SIZEOFSUPERBLOCK + (superblockPtr->inode_offset * size), SEEK_SET);
-        fwrite(((void *) superblockPtr + SIZEOFSUPERBLOCK + superblockPtr->inode_offset * size), (superblockPtr->data_offset - superblockPtr->inode_offset) * size, 1, outputPtr);
-        fseek(outputPtr, SIZEOFBOOTBLOCK + SIZEOFSUPERBLOCK + (superblockPtr->data_offset * size) + (currentDataBlock * size), SEEK_SET);
-        fwrite((dataBlockPtr + (currentDataBlock * size)), (superblockPtr->swap_offset - superblockPtr->data_offset - currentDataBlock) * size, 1, outputPtr);
-        //TODO: copy swap region! (if there is any...swap offset to end of file)
+//        fseek(outputPtr, SIZEOFBOOTBLOCK, SEEK_SET);
+//        fwrite(superblockPtr, SIZEOFSUPERBLOCK, 1, outputPtr);
+//        fseek(outputPtr, SIZEOFBOOTBLOCK + SIZEOFSUPERBLOCK, SEEK_SET);
+//        fwrite(((void *) superblockPtr + SIZEOFSUPERBLOCK), (superblockPtr->inode_offset * size), 1, outputPtr);
+//        fseek(outputPtr, SIZEOFBOOTBLOCK + SIZEOFSUPERBLOCK + (superblockPtr->inode_offset * size), SEEK_SET);
+//        fwrite(((void *) superblockPtr + SIZEOFSUPERBLOCK + superblockPtr->inode_offset * size), (superblockPtr->data_offset - superblockPtr->inode_offset) * size, 1, outputPtr);
+//        fseek(outputPtr, SIZEOFBOOTBLOCK + SIZEOFSUPERBLOCK + (superblockPtr->data_offset * size) + (currentDataBlock * size), SEEK_SET);
+//        fwrite((dataBlockPtr + (currentDataBlock * size)), (superblockPtr->swap_offset - superblockPtr->data_offset - currentDataBlock) * size, 1, outputPtr);
+//        //TODO: copy swap region! (if there is any...swap offset to end of file)
 
         fclose(filePtr);
         fclose(outputPtr);
@@ -437,7 +437,7 @@ long orderIBlocks(int numToWriteIBlock, int numToWriteData, long nodeLocation, i
         }
 
         offsets[i] = nodeLocationValue;
-        fwrite(currentIBlock, size, 1, outputFile);
+//        fwrite(currentIBlock, size, 1, outputFile);
         nodeLocationValue++;
     }
 
@@ -473,7 +473,7 @@ long orderI2Blocks(int numToWriteI2Block, int numToWriteIBlock, int numToWriteDa
         }
 
         offsets[i] = nodeLocationValue;
-        fwrite(currentI2Block, size, 1, outputFile);
+//        fwrite(currentI2Block, size, 1, outputFile);
         nodeLocationValue++;
     }
 
@@ -518,7 +518,7 @@ long orderI3Blocks(int numToWriteI3Block, int numToWriteI2Block, int numToWriteI
         }
 
         offsets[i] = nodeLocationValue;
-        fwrite(currentI3Block, size, 1, outputFile);
+//        fwrite(currentI3Block, size, 1, outputFile);
         nodeLocationValue++;
 
 #ifdef DEBUG
