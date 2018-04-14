@@ -332,7 +332,7 @@ boolean defragment(char *inputFile) {
         printf("head of free list %d\n", superblockPtr->free_block);
         printf("value of currentDataBlock %ld\n", currentDataBlock);
         printInodes(inodePtr, dataBlockPtr, size, superblockPtr->inode_offset, superblockPtr->data_offset);
-//        printf("head of free list %d\n", superblockPtr->free_block);
+        printf("head of free list %d\n", superblockPtr->free_block);
 //        printDataBlocks(dataBlockPtr, size, superblockPtr->data_offset, superblockPtr->swap_offset);
 
         //open and read both files into memory for debugging purposes...

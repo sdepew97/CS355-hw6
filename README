@@ -1,0 +1,27 @@
+Name: Sarah Depew
+
+Known Bugs and Limitations:
+* There is a bug with how I am putting together the free list. I am able to put together the free list correctly for the datafile-frag image given to us, but I am not able to put the free list together for Ziting's data disks.
+* I think that perhaps I write the swap space incorrectly, but was unable to test that with disk generation.
+* Too, I have not tested on any disks with inode region offset of more than 0, but my code should be written to accommodate this change in disk layout.
+
+General Design Choices and Assumptions:
+* I assumed that the block size is always divisible by 4 (Dianna said this was reasonable in office hours)
+* I assumed that the swap region could be indivisible by blocks and goes from the end of the data region to the end of the file size
+* I assumed that the data region is filled with blocks from the data offset to the swap offset
+
+How Did I Test:
+* I compared my disk image output from Dianna's file and Ziting's files and got the same output
+* I traced the files from the datafile-frag disk given to us and then traced these files on the defragmented disk image I created and diffed them to check if they were identical
+* I used Ziting's tests and data files to test my code
+
+Parts Not Implemented:
+* I did not do the max read disk extra credit; rather, I simply printed out a statement to the user if the disk image were too large to keep in memory at a time
+
+How to compile:
+* You can simply type "make"
+* If you'd like to run in debugging mode, there are various options for that and do make debug (if you'd like to see print outs of the inodes and the data blocks)
+* There are also multiple cleaning options to remove the executables if needed
+
+How to run it:
+* Simply ./defrag <data to be defragmented>
