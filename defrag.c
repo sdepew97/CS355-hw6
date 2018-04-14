@@ -20,8 +20,8 @@ int main(int argc, char *argv[]) {
         } else if (returnVal == help) {
             printManPage();
         } else {
-            if(defragment(argv[1]) != TRUE) {
-              perror("An error occured while defragmenting the disk.\n");
+            if (defragment(argv[1]) != TRUE) {
+                perror("An error occured while defragmenting the disk.\n");
             }
         }
     } else {
@@ -54,7 +54,7 @@ void printManPage() {
 }
 
 /*
- * Method to parse the input command from the user //TODO: add error checking, here
+ * Method to parse the input command from the user
  */
 int parseCmd(int argc, char *argv[]) {
     //input flags
@@ -112,7 +112,10 @@ boolean defragment(char *inputFile) {
             printf("Please note the disk size being read into memory and operated on is larger than allowed.\n");
         }
         rewind(filePtr);
-        printf("Number bytes in input file: %ld\n", inputFileSize); //TODO: remove
+
+#ifdef DEBUG
+        printf("Number bytes in input file: %ld\n", inputFileSize);
+#endif
         void *allOfInputFile = malloc(inputFileSize);
         if (allOfInputFile == NULL) {
             perror("Malloc failed.\n");
@@ -127,7 +130,7 @@ boolean defragment(char *inputFile) {
         //Create pointers to important portions of disk file image in memory
         char *bootBlockPtr = allOfInputFile;
         superblock *superblockPtr = (((void *) allOfInputFile) + SIZEOFBOOTBLOCK);
-        int size = superblockPtr->size;
+        long size = superblockPtr->size;
 
         //Adjust the superblock value to reflect the proper value
         long dataBlockOffsetInFile = offsetBytes(size, superblockPtr->data_offset); //start of data region in file
@@ -167,19 +170,18 @@ boolean defragment(char *inputFile) {
         printDataBlocks(dataBlockPtr, size, superblockPtr->data_offset, superblockPtr->swap_offset);
 #endif
 
-        //TODO: organize from here, down
         long currentDataBlock = 0; //start the counter that keeps track of the data blocks that are being reorganized...
         inode *currentInode = inodePtr;
 
-        //read all the inodes and reorganize their data blocks individually!
-        for (int i = 0; i < NUMINODES; i++) {
+        //read all the inodes and reorganize their data blocks individually in the loop, below
+        for (long i = 0; i < NUMINODES; i++) {
             //check if inode is free or not...if not free, then do data management and organization (otherwise, just output to output file...)
             if (currentInode->nlink == UNUSED) {
-                //simply leave inode as is without any worries, since it will get re-copied at end
+                //simply leave inode as is without any worries, since it will get re-copied at end and absorbed into the free list
             } else {
                 //check how much nesting is used, here
                 if (currentInode->size <= DBLOCKS) {
-                    float divisionResult = (float) currentInode->size / (float) size;
+                    float divisionResult = (float) ((float) currentInode->size / (float) size);
                     long numBlocks = ceilf(divisionResult); //number of blocks used, total (take ceiling)
 
                     currentDataBlock = orderDBlocks(numBlocks, currentDataBlock, currentInode->dblocks, dataBlockPtr,
@@ -193,13 +195,15 @@ boolean defragment(char *inputFile) {
                     numBlocks -= N_DBLOCKS;
 
                     //calculate number of blocks total and number of indirect layers required to get those blocks...
-                    divisionResult = ((float) numBlocks) / ((float) (size) / (float) (sizeof(int)));
+                    divisionResult = (float) (((float) numBlocks) / ((float) (size) / (float) (sizeof(int))));
                     long numIndirect = ceilf(divisionResult);
+#ifdef DEBUG
                     printf("numIndirect: %ld\n", numIndirect);
+#endif
                     currentDataBlock = orderIBlocks(numIndirect, numBlocks, currentDataBlock, currentInode->iblocks,
                                                     dataBlockPtr, size, outputPtr);
                 } else if (currentInode->size > IBLOCKS && currentInode->size <= I2BLOCKS) {
-                    float divisionResult = (float) currentInode->size / (float) size;
+                    float divisionResult = (float) ((float) currentInode->size / (float) size);
                     long numBlocks = ceilf(divisionResult); //number of blocks used, total (take ceiling)
 
                     currentDataBlock = orderDBlocks(N_DBLOCKS, currentDataBlock, currentInode->dblocks, dataBlockPtr,
@@ -213,7 +217,7 @@ boolean defragment(char *inputFile) {
                     numBlocks -= N_IBLOCKS * (size / sizeof(int));
 
                     //calculate number of indirect blocks needed
-                    divisionResult = ((float) numBlocks) / ((float) (size) / (float) (sizeof(int)));
+                    divisionResult = (float) (((float) numBlocks) / ((float) (size) / (float) (sizeof(int))));
                     long numIndirect = ceilf(divisionResult);
 
 #ifdef DEBUG
@@ -223,9 +227,7 @@ boolean defragment(char *inputFile) {
                                                      &currentInode->i2block, dataBlockPtr, size, outputPtr);
                 }
                 else if (currentInode->size > I2BLOCKS && currentInode->size <= I3BLOCKS) {
-                    //TODO: implement this one once other one is working
-
-                    float divisionResult = (float) currentInode->size / (float) size;
+                    float divisionResult = (float) ((float) currentInode->size / (float) size);
                     long numBlocks = ceilf(divisionResult); //number of blocks used, total (take ceiling)
 
                     currentDataBlock = orderDBlocks(N_DBLOCKS, currentDataBlock, currentInode->dblocks, dataBlockPtr,
@@ -250,14 +252,16 @@ boolean defragment(char *inputFile) {
 
                     float otherDivisionResult = (float) ((float) numBlocks) / (((float) (size) / (float) (sizeof(int))));
                     long numIndirect = ceilf(otherDivisionResult);
+#ifdef DEBUG
                     printf("num2Indirect in I3 %ld\n", num2Indirect);
-
                     printf("num blocks **** %ld\n", numBlocks);
+#endif
 
                     currentDataBlock = orderI3Blocks(1, num2Indirect, numIndirect, numBlocks, currentDataBlock, &currentInode->i3block, dataBlockPtr, size, outputPtr);
-
                 } else {
                     // last one is an error, since cannot use more than I3BLOCKS...
+                    printf("File Size Too Large To Handle.\n");
+                    return FALSE;
                 }
             }
 
@@ -265,12 +269,13 @@ boolean defragment(char *inputFile) {
             currentInode = ((void *) currentInode) + sizeof(inode);
         }
 
+#ifdef DEBUG
         printf("**** value of current Data Block %ld ****\n", currentDataBlock);
-
+#endif
         //assemble the free list of inodes and write to file
-        int valueToTransfer;
+        long valueToTransfer;
         superblockPtr->free_block = currentDataBlock;
-        for(int i=currentDataBlock; i<(superblockPtr->swap_offset - superblockPtr->data_offset); i++) {
+        for(long i=currentDataBlock; i<(superblockPtr->swap_offset - superblockPtr->data_offset); i++) {
             valueToTransfer = i + 1;
             ((block *) (allOfInputFile + SIZEOFBOOTBLOCK + SIZEOFSUPERBLOCK + ((superblockPtr->data_offset + i) *size)))->next = valueToTransfer;
         }
@@ -295,18 +300,18 @@ boolean defragment(char *inputFile) {
         free(allOfInputFile);
         filePtr = fopen(outputFinalFileName, readingFlag);
 
-        //Read new disk image into memory //TODO: add a max here
+        //Read new disk image into memory
         fseek(filePtr, 0L, SEEK_END);
         inputFileSize = ftell(filePtr);
         rewind(filePtr);
         printf("Number bytes in output file: %ld\n", inputFileSize);
-        allOfInputFile = malloc(inputFileSize); //TODO: free this at the end!
+        allOfInputFile = malloc(inputFileSize);
         if (allOfInputFile == NULL) {
             //malloc failed
             perror("Malloc failed.\n");
             return FALSE;
         }
-        fread(allOfInputFile, inputFileSize, 1, filePtr); //TODO: recognize here if read was over maximum allowed size!
+        fread(allOfInputFile, inputFileSize, 1, filePtr);
 
         //read in and store the superblock, inode region pointer, and data region pointers
         superblockPtr = (((void *) allOfInputFile) + SIZEOFBOOTBLOCK);
@@ -314,7 +319,6 @@ boolean defragment(char *inputFile) {
         dataBlockPtr = (((void *) allOfInputFile) + dataBlockOffsetInFile);
 
         //print inodes and data blocks prior to reorganization..., output swap region, and make free list, again
-        //TODO: build free list, here with currentDataBlock as the head of the list!
         printf("Final Print\n");
         printf("********Super Block Information********\n");
         printf("size of block %d\n", superblockPtr->size);
@@ -327,11 +331,7 @@ boolean defragment(char *inputFile) {
         printInodes(inodePtr, dataBlockPtr, size, superblockPtr->inode_offset, superblockPtr->data_offset);
         printf("head of free list %d\n", superblockPtr->free_block);
         printDataBlocks(dataBlockPtr, size, superblockPtr->data_offset, superblockPtr->swap_offset);
-///*
-        //TODO: change ints to longs and change to floats if needed!
 
-        //TODO: not going to work until blocks are output to file correctly!!!
-        //TODO: remove at the end
         //open and read both files into memory for debugging purposes...
         fclose(filePtr);
 
@@ -344,58 +344,54 @@ boolean defragment(char *inputFile) {
         long oldFileSize = ftell(filePtr);
         rewind(filePtr);
         printf("Number bytes in old file: %ld\n", oldFileSize);
-        void *allOfOldFile = malloc(oldFileSize); //TODO: free this at the end!
+        void *allOfOldFile = malloc(oldFileSize);
         if (allOfOldFile == NULL) {
             //malloc failed
             perror("Malloc failed.\n");
             return FALSE;
         }
-        fread(allOfOldFile, oldFileSize, 1, filePtr); //TODO: recognize here if read was over maximum allowed size!
+        fread(allOfOldFile, oldFileSize, 1, filePtr);
 
         fseek(outputPtr, 0L, SEEK_END);
         long newFileSize = ftell(outputPtr);
         rewind(outputPtr);
         printf("Number bytes in new file: %ld\n", newFileSize);
-        void *allOfNewFile = malloc(newFileSize); //TODO: free this at the end!
+        void *allOfNewFile = malloc(newFileSize);
         if (allOfNewFile == NULL) {
             //malloc failed
             perror("Malloc failed.\n");
             return FALSE;
         }
-        fread(allOfNewFile, newFileSize, 1, outputPtr); //TODO: recognize here if read was over maximum allowed size!
+        fread(allOfNewFile, newFileSize, 1, outputPtr);
 
         inode *oldInodePtr = allOfOldFile + SIZEOFSUPERBLOCK + SIZEOFBOOTBLOCK + superblockPtr->inode_offset * size + 17 * sizeof(inode);
         inode *newInodePtr = allOfNewFile + SIZEOFSUPERBLOCK + SIZEOFBOOTBLOCK + superblockPtr->inode_offset * size + 17 * sizeof(inode);
         void *dataBlockOld = allOfOldFile + SIZEOFSUPERBLOCK + SIZEOFBOOTBLOCK + superblockPtr->data_offset * size;
         void *dataBlockNew = allOfNewFile + SIZEOFSUPERBLOCK + SIZEOFBOOTBLOCK + superblockPtr->data_offset * size;
-
-        //TODO: also see if works with pointer from new data file
         outputDFile(oldInodePtr, newInodePtr, size, dataBlockOld, dataBlockNew, "old 17\0", "new 17\0");
 
         oldInodePtr = allOfOldFile + SIZEOFSUPERBLOCK + SIZEOFBOOTBLOCK + superblockPtr->inode_offset * size + 18 * sizeof(inode);
         newInodePtr = allOfNewFile + SIZEOFSUPERBLOCK + SIZEOFBOOTBLOCK + superblockPtr->inode_offset * size + 18 * sizeof(inode);
-
         outputIFile(oldInodePtr, newInodePtr, size, dataBlockOld, dataBlockNew, "old 18\0", "new 18\0");
-//*/
+
         free(allOfOldFile);
         free(allOfNewFile);
         fclose(filePtr);
         fclose(outputPtr);
-
-        //END OF TESTING
 #endif
+        //Free memory
         free(allOfInputFile);
         free(inputFileName);
         free(outputFinalFileName);
 
-        return TRUE; //TODO: remove once not debugging...
+        return TRUE;
     } else {
         //File pointers were invalid
         return FALSE;
     }
 
-    //TODO: close files! and free pointers from beginning
-    return TRUE;
+    //default return value is false
+    return FALSE;
 }
 
 /*
@@ -405,7 +401,7 @@ long orderDBlocks(int numToWrite, long nodeLocation, int *offsets, void *dataPtr
     long nodeLocationValue = nodeLocation;
 
     for (int i = 0; i < numToWrite; i++) {
-        void *dataBlock = (dataPtr + (offsets[i] * size)); //TODO: check computation
+        void *dataBlock = (dataPtr + (offsets[i] * size));
         //dataBlock is now pointing to the data block to move (put in current node location and set array value accordingly)
         fwrite(dataBlock, size, 1, outputFile);
         offsets[i] = nodeLocationValue;
@@ -524,7 +520,10 @@ long orderI3Blocks(int numToWriteI3Block, int numToWriteI2Block, int numToWriteI
         offsets[i] = nodeLocationValue;
         fwrite(currentI3Block, size, 1, outputFile);
         nodeLocationValue++;
+
+#ifdef DEBUG
         printf("node location value %ld\n", nodeLocationValue);
+#endif
     }
 
     return nodeLocationValue;
@@ -534,9 +533,13 @@ long offsetBytes(int blockSize, int offset) {
     return (SIZEOFBOOTBLOCK + SIZEOFSUPERBLOCK + blockSize * offset);
 }
 
+/*
+ * Error checking methods, below
+ */
 void printInodes(inode *startInodeRegion, void *startOfDataRegion, int blockSize, int inodeOffset, int dataOffset){
     int numInodes = ((dataOffset-inodeOffset) * blockSize)/sizeof(inode);
-    printf("number inodes: %d\n", numInodes);
+
+    printf("Number of inodes: %d\n", numInodes);
     inode *currentInode = startInodeRegion;
     int *currentDataBlock;
 
@@ -569,10 +572,9 @@ void printDataBlocks(void *startDataRegion, int blockSize, int dataOffset, int s
     }
 }
 
-//Error checking methods
 void printDBlocks(int numToWrite, int *offsets, void *dataPtr, int size, FILE *outputFile) {
     for (int i = 0; i < numToWrite; i++) {
-        void *dataBlock = (dataPtr + offsets[i] * size); //TODO: check computation
+        void *dataBlock = (dataPtr + offsets[i] * size);
         //dataBlock is now pointing to the data block to move (put in current node location and set array value accordingly)
         fwrite(dataBlock, size, 1, outputFile);
     }
@@ -600,12 +602,12 @@ void printIBlocks(int numToWriteIBlock, int numToWriteData, int *offsets, void *
 }
 
 /*
- * Error checking method //TODO: write to allow for indirect files!
+ * Error checking method for the datafile frag to reassemble files
  */
 void outputDFile(inode *fileToOutputOriginal, inode *fileToOutputNew, int size, void *dataRegionOld, void *dataRegionNew, char *oldOutputName, char *newOutputName) {
     char *writingFlag = "wb";
-    char *outputOldFileName = strdup(oldOutputName); //TODO: free at the end!!!
-    char *outputNewFileName = strdup(newOutputName); //TODO: free at the end!!!
+    char *outputOldFileName = strdup(oldOutputName);
+    char *outputNewFileName = strdup(newOutputName);
 
     //File opening
     FILE *oldOutput = fopen(outputOldFileName, writingFlag);
@@ -631,8 +633,8 @@ void outputDFile(inode *fileToOutputOriginal, inode *fileToOutputNew, int size, 
 
 void outputIFile(inode *fileToOutputOriginal, inode *fileToOutputNew, int size, void *dataRegionOld, void *dataRegionNew, char *oldOutputName, char *newOutputName) {
     char *writingFlag = "wb";
-    char *outputOldFileName = strdup(oldOutputName); //TODO: free at the end!!!
-    char *outputNewFileName = strdup(newOutputName); //TODO: free at the end!!!
+    char *outputOldFileName = strdup(oldOutputName);
+    char *outputNewFileName = strdup(newOutputName);
 
     //File opening
     FILE *oldOutput = fopen(outputOldFileName, writingFlag);
@@ -659,7 +661,7 @@ void outputIFile(inode *fileToOutputOriginal, inode *fileToOutputNew, int size, 
     //calculate number of blocks total and number of indirect layers required to get those blocks...
     divisionResult = ((float) numBlocks) / ((float) (size) / (float) (sizeof(int)));
     numIndirect = ceilf(divisionResult);
-    printIBlocks(numIndirect, numBlocks, fileToOutputNew->iblocks, dataRegionNew, size, newOutput); //TODO: figure out why this is broken for new output file!! :/
+    printIBlocks(numIndirect, numBlocks, fileToOutputNew->iblocks, dataRegionNew, size, newOutput);
 
     free(outputOldFileName);
     free(outputNewFileName);
