@@ -167,7 +167,7 @@ boolean defragment(char *inputFile) {
         printf("head of inode list %d\n", superblockPtr->free_inode);
         printf("head of free list %d\n", superblockPtr->free_block);
         printInodes(inodePtr, dataBlockPtr, size, superblockPtr->inode_offset, superblockPtr->data_offset);
-        printDataBlocks(dataBlockPtr, size, superblockPtr->data_offset, superblockPtr->swap_offset);
+//        printDataBlocks(dataBlockPtr, size, superblockPtr->data_offset, superblockPtr->swap_offset);
 #endif
 
         long currentDataBlock = 0; //start the counter that keeps track of the data blocks that are being reorganized...
@@ -330,7 +330,7 @@ boolean defragment(char *inputFile) {
         printf("value of currentDataBlock %ld\n", currentDataBlock);
         printInodes(inodePtr, dataBlockPtr, size, superblockPtr->inode_offset, superblockPtr->data_offset);
         printf("head of free list %d\n", superblockPtr->free_block);
-        printDataBlocks(dataBlockPtr, size, superblockPtr->data_offset, superblockPtr->swap_offset);
+//        printDataBlocks(dataBlockPtr, size, superblockPtr->data_offset, superblockPtr->swap_offset);
 
         //open and read both files into memory for debugging purposes...
         fclose(filePtr);
